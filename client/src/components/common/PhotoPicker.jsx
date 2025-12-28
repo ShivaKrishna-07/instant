@@ -1,7 +1,16 @@
-import React from "react";
+"use client";
+import { forwardRef } from "react";
 
-function PhotoPicker() {
-  return <div>PhotoPicker</div>;
-}
+const PhotoPicker = forwardRef(function PhotoPicker({ onChange }, ref) {
+  return (
+    <input
+      ref={ref}
+      type="file"
+      accept="image/*"
+      onChange={onChange}
+      hidden
+    />
+  );
+});
 
 export default PhotoPicker;

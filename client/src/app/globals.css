@@ -1,0 +1,33 @@
+@import "tailwindcss";
+
+/* =========================
+   THEME CONFIG (Tailwind v4)
+   ========================= */
+@theme {
+  /* Background images */
+  --background-image-chat-background: url("/chat-bg.png");
+
+  /* Colors */
+  --color-secondary: #8696a0;
+  --color-teal-light: #7ae3c3;
+  --color-photopicker-overlay-background: rgba(30, 42, 49, 0.8);
+  --color-dropdown-background: #233138;
+  --color-dropdown-background-hover: #182229;
+  --color-input-background: #2a3942;
+  --color-primary-strong: #e9edef;
+  --color-panel-header-background: #202c33;
+  --color-panel-header-icon: #aebac1;
+  --color-icon-lighter: #8696a0;
+  --color-icon-green: #00a884;
+  --color-search-input-container-background: #111b21;
+  --color-conversation-border: rgba(134, 150, 160, 0.15);
+  --color-conversation-panel-background: #0b141a;
+  --color-background-default-hover: #202c33;
+  --color-incoming-background: #202c33;
+  --color-outgoing-background: #005c4b;
+  --color-bubble-meta: hsla(0, 0%, 100%, 0.6);
+  --color-icon-ack: #53bdeb;
+
+  /* Grid templates */
+  --grid-template-columns-main: 1fr 2.4fr;
+}

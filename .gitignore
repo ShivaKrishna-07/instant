@@ -1,0 +1,26 @@
+# dependencies
+node_modules/
+
+# env files
+.env
+.env.*
+
+# build outputs
+.next/
+dist/
+build/
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# OS
+.DS_Store
+
+# firebase
+server/src/config/instant-24356-firebase-adminsdk-fbsvc-5dbcf58c39.json
+
+# local envs and service account jsons
+server/.env
+server/src/config/*.json

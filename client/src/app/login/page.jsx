@@ -15,47 +15,42 @@ const page = () => {
   const [state, dispatch] = useStateProvider();
 
   const handleLogin = async () => {
-    const provider = new GoogleAuthProvider();
-    const { user } = await signInWithPopup(auth, provider);
-    const { displayName, email, photoURL, uid } = user;
-
     try {
+      const provider = new GoogleAuthProvider();
+      const { user } = await signInWithPopup(auth, provider);
+      const { displayName, email, photoURL } = user;
+
       // Get Firebase ID token
       const idToken = await user.getIdToken();
+      
+      // Store token in localStorage
+      localStorage.setItem('authToken', idToken);
 
+      // Check if user exists in database
       const res = await apiClient.post("auth/check-user", {
         email,
-        token: idToken,
       });
 
       if (res.data.exists) {
-        // Backend sets cookie; fetch full user from backend and store in context
-        try {
-          const userRes = await apiClient.get('/auth/get-user');
-          if (userRes?.data?.user) {
-            dispatch({ type: reducerCases.SET_USER_INFO, userInfo: userRes.data.user });
-            dispatch({ type: reducerCases.SET_NEW_USER, newUser: false });
-            router.replace('/');
-            return;
-          }
-        } catch (err) {
-          // fallback: set minimal info if backend get-user fails
+        // User exists - fetch full user data from backend
+        const userRes = await apiClient.get('/auth/get-user');
+        if (userRes?.data?.user) {
+          dispatch({ type: reducerCases.SET_USER_INFO, userInfo: userRes.data.user });
+          dispatch({ type: reducerCases.SET_NEW_USER, newUser: false });
+          router.replace('/');
         }
-
-        dispatch({ type: reducerCases.SET_USER_INFO, userInfo: { id: res.data.data.id, name: displayName, email, profilePic: photoURL } });
-        dispatch({ type: reducerCases.SET_NEW_USER, newUser: false });
-        router.replace('/');
       } else {
+        // New user - go to onboarding
         dispatch({ type: reducerCases.SET_NEW_USER, newUser: true });
-        dispatch({ type: reducerCases.SET_USER_INFO, userInfo: { name: displayName, email, profilePic: photoURL } });
-        // Save idToken temporarily so onboarding can send it to server (session-scoped)
-        try {
-          sessionStorage.setItem('idToken', idToken);
-        } catch (e) {}
+        dispatch({ 
+          type: reducerCases.SET_USER_INFO, 
+          userInfo: { name: displayName, email, profilePic: photoURL } 
+        });
         router.replace('/onboarding');
       }
     } catch (error) {
-      console.error('Login error', error);
+      console.error('Login error:', error);
+      alert('Login failed. Please try again.');
     }
   };
 

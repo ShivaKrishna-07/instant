@@ -35,25 +35,21 @@ const page = () => {
     }
 
     try {
-      const token = typeof window !== 'undefined' ? sessionStorage.getItem('idToken') : null;
       const res = await apiClient.post("/auth/onboard-user", {
         email: userInfo.email,
         name: name.trim(),
         about: about.trim(),
         profileImage,
-        token
       });
-      dispatch({ type: "SET_NEW_USER", newUser: false });
-      dispatch({ type: "SET_USER_INFO", userInfo: {
-        name,
-        about,
-        email: userInfo.email,
-        profileImage,
-      } });
-      router.push("/");
-      try { sessionStorage.removeItem('idToken'); } catch (e) {}
-      toast("Profile created successfully!");
+      
+      if (res.data?.user) {
+        dispatch({ type: "SET_USER_INFO", userInfo: res.data.user });
+        dispatch({ type: "SET_NEW_USER", newUser: false });
+        toast("Profile created successfully!");
+        router.push("/");
+      }
     } catch (error) {
+      console.error('Onboarding error:', error);
       toast("Failed to create profile. Please try again.");
     }
   }

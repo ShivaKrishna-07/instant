@@ -8,5 +8,8 @@ router.post('/check-user', checkUser)
 router.post('/onboard-user', onBoardUser)
 router.get('/get-user', authMiddleware, getUser)
 router.get('/get-contacts', authMiddleware, getAllUsers)
+router.post('/logout', (req, res) => {
+  res.json({ success: true, message: 'Logged out successfully' });
+})
 
 export default router;

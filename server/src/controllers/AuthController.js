@@ -4,51 +4,32 @@ import cloudinaryUtils from "../utils/cloudinary.js";
 import admin from "../config/firebaseAdmin.js";
 
 export const checkUser = asyncHandler(async (req, res) => {
-  const { email, token } = req.body;
+  const { email } = req.body;
 
-  // If token provided, verify it and set cookie when user exists
-  let decoded = null;
-  if (token) {
-    try {
-      decoded = await admin.auth().verifyIdToken(token);
-    } catch (err) {
-      // invalid token -> continue to check user but do not set cookie
-      decoded = null;
-    }
+  if (!email) {
+    return apiError(res, "Email is required", 400);
   }
 
   const existsRow = await db.userExistsByEmail(email);
   const exists = !!existsRow;
 
-  if (exists && decoded) {
-    // set httpOnly cookie
-    const cookieOpts = {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
-    };
-    res.cookie("token", token, cookieOpts);
-  }
-
-  return sendResponse(res, 200, "User check successfull", {
+  return sendResponse(res, 200, "User check successful", {
     exists,
     ...(existsRow || {}),
   });
 });
 
 export const onBoardUser = asyncHandler(async (req, res) => {
-  const { email, name, about, profileImage, token } = req.body;
+  const { email, name, about, profileImage } = req.body;
   if (!email || !name || !profileImage) {
     return apiError(res, "Email, name, and profile picture are required", 400);
   }
 
   // profileImage may be a remote URL (from Firebase) or a data URL / local path.
-  // Decide whether to upload to Cloudinary or store the client public asset URL directly.
   let storedImage = profileImage;
 
   try {
-    // If image is a client-side public asset (starts with '/'), store absolute client URL directly
+    // If image is a client-side public asset (starts with '/'), store as is
     if (typeof profileImage === "string" && profileImage.startsWith("/")) {
       storedImage = profileImage;
     } else if (
@@ -65,7 +46,7 @@ export const onBoardUser = asyncHandler(async (req, res) => {
       });
       storedImage = uploaded?.secure_url || storedImage;
     } else {
-      // For remote URLs (https://...) or other cases, let Cloudinary fetch or upload remote URL
+      // For remote URLs (https://...)
       const uploaded = await cloudinaryUtils.uploadFromPath(profileImage, {
         folder: "instant/users",
         overwrite: true,
@@ -82,22 +63,6 @@ export const onBoardUser = asyncHandler(async (req, res) => {
   }
 
   const inserted = await db.insertUser({ email, name, about, profileImage: storedImage });
-
-  // If token provided and valid, set httpOnly cookie for subsequent requests
-  if (token) {
-    try {
-      await admin.auth().verifyIdToken(token);
-      const cookieOpts = {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
-      };
-      res.cookie("token", token, cookieOpts);
-    } catch (err) {
-      // ignore invalid token here; user created but not authenticated server-side
-    }
-  }
 
   return sendResponse(res, 201, "User created successfully", {
     user: inserted,

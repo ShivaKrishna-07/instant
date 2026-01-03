@@ -13,7 +13,7 @@ function ChatListHeader() {
 
   return <div className="h-16 px-4 py-3 flex justify-between items-center">
     <div className="cursor-pointer">
-      <Avatar type='sm' image={userInfo?.profileImage || "/default_avatar.png"} />
+      <Avatar type='sm' image={userInfo?.profile_image || "/default_avatar.png"} />
     </div>
     <div className="flex gap-6">
       <BsFillChatLeftTextFill className="text-panel-header-icon cursor-pointer text-xl" title="New Chat" onClick={handleAllContactsPage} />

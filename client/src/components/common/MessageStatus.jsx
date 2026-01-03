@@ -1,11 +1,11 @@
 import React from "react";
-import { BsCheck, BsCheckAll } from "react-icons/bs";
+import { IoCheckmarkDone, IoCheckmarkOutline } from "react-icons/io5";
 
 function MessageStatus({ status }) {
   return <div>
-    {status === "sent" && <BsCheck className="text-lg" />}
-    {status === "delivered" && <BsCheckAll className="text-lg" />}
-    {status === "read" && <BsCheckAll className="text-lg text-icon-ack" />}
+    {status === "sent" && <IoCheckmarkOutline className="text-lg" />}
+    {status === "delivered" && <IoCheckmarkDone className="text-lg" />}
+    {status === "read" && <IoCheckmarkDone className="text-lg text-icon-ack" />}
   </div>;
 }
 

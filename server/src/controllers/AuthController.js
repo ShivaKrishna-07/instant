@@ -20,24 +20,24 @@ export const checkUser = asyncHandler(async (req, res) => {
 });
 
 export const onBoardUser = asyncHandler(async (req, res) => {
-  const { email, name, about, profileImage } = req.body;
-  if (!email || !name || !profileImage) {
+  const { email, name, about, profile_image } = req.body;
+  if (!email || !name || !profile_image) {
     return apiError(res, "Email, name, and profile picture are required", 400);
   }
 
-  // profileImage may be a remote URL (from Firebase) or a data URL / local path.
-  let storedImage = profileImage;
+  // profile_image may be a remote URL (from Firebase) or a data URL / local path.
+  let storedImage = profile_image;
 
   try {
     // If image is a client-side public asset (starts with '/'), store as is
-    if (typeof profileImage === "string" && profileImage.startsWith("/")) {
-      storedImage = profileImage;
+    if (typeof profile_image === "string" && profile_image.startsWith("/")) {
+      storedImage = profile_image;
     } else if (
-      typeof profileImage === "string" &&
-      profileImage.startsWith("data:")
+      typeof profile_image === "string" &&
+      profile_image.startsWith("data:")
     ) {
       // data URL (camera/photo) -> upload buffer
-      const matches = profileImage.match(/^data:(.+);base64,(.+)$/);
+      const matches = profile_image.match(/^data:(.+);base64,(.+)$/);
       if (!matches) throw new Error("Invalid data URL");
       const base64Data = matches[2];
       const buffer = Buffer.from(base64Data, "base64");
@@ -47,11 +47,11 @@ export const onBoardUser = asyncHandler(async (req, res) => {
       storedImage = uploaded?.secure_url || storedImage;
     } else {
       // For remote URLs (https://...)
-      const uploaded = await cloudinaryUtils.uploadFromPath(profileImage, {
+      const uploaded = await cloudinaryUtils.uploadFromPath(profile_image, {
         folder: "instant/users",
         overwrite: true,
       });
-      storedImage = uploaded?.secure_url || profileImage;
+      storedImage = uploaded?.secure_url || profile_image;
     }
   } catch (err) {
     return apiError(
@@ -62,11 +62,11 @@ export const onBoardUser = asyncHandler(async (req, res) => {
     );
   }
 
-  const inserted = await db.insertUser({ email, name, about, profileImage: storedImage });
+  const inserted = await db.insertUser({ email, name, about, profile_image: storedImage });
 
   return sendResponse(res, 201, "User created successfully", {
     user: inserted,
-    profileImage: storedImage,
+    profile_image: storedImage,
   });
 });
 

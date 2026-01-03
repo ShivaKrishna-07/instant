@@ -35,6 +35,8 @@ function InnerFetch({ children }) {
         const res = await apiClient.get('/auth/get-user');
         if (res.data?.user) {
           dispatch({ type: reducerCases.SET_USER_INFO, userInfo: res.data.user });
+          dispatch({ type: reducerCases.SET_NEW_USER, newUser: false });
+                    router.replace('/');
         }
       } catch (err) {
         // Silent fail — user not logged in or token invalid

@@ -32,19 +32,13 @@ const page = () => {
       });
 
       if (res.data.exists) {
-        // User exists - fetch full user data from backend
-        const userRes = await apiClient.get('/auth/get-user');
-        if (userRes?.data?.user) {
-          dispatch({ type: reducerCases.SET_USER_INFO, userInfo: userRes.data.user });
-          dispatch({ type: reducerCases.SET_NEW_USER, newUser: false });
-          router.replace('/');
-        }
+        router.replace('/');
       } else {
         // New user - go to onboarding
         dispatch({ type: reducerCases.SET_NEW_USER, newUser: true });
         dispatch({ 
           type: reducerCases.SET_USER_INFO, 
-          userInfo: { name: displayName, email, profilePic: photoURL } 
+          userInfo: { name: displayName, email, profile_image: photoURL } 
         });
         router.replace('/onboarding');
       }

@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 import authRoutes from './routes/AuthRoutes.js'
 import messagesRoutes from './routes/MessageRoutes.js'
 import authMiddleware from './middlewares/AuthMiddleware.js';
+import { Server } from 'socket.io';
 import './config/firebaseAdmin.js';
 
 dotenv.config();
@@ -32,6 +33,42 @@ const server = app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
 
+const io = new Server(server, {
+  cors: {
+    origin: process.env.CLIENT_ORIGIN || 'http://localhost:3000',
+    methods: ["GET", "POST"],
+    credentials: true
+  }
+})
+
 global.onlineUsers = new Map();
 
-export { app, server };
+io.on('connection', (socket) => {
+  global.chatSocket = socket;
+  
+  socket.on('add-user', (userId) => {
+    onlineUsers.set(userId, socket.id);
+  });
+  
+  socket.on('send-msg', (data) => {
+    const sendUserSocket = onlineUsers.get(data.to);
+    
+    if(sendUserSocket){
+      socket.to(sendUserSocket).emit("msg-receive", {
+        from: data.from,
+        message: data.message
+      });
+    }
+  });
+  
+  socket.on('disconnect', () => {
+    for (let [userId, socketId] of onlineUsers.entries()) {
+      if (socketId === socket.id) {
+        onlineUsers.delete(userId);
+        break;
+      }
+    }
+  });
+});
+
+export { app, server, io };

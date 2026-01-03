@@ -15,7 +15,7 @@ const page = () => {
   const [formData, setFormData] = useState({
     name: userInfo?.name || "",
     about: "",
-    profileImage: "/default_avatar.png",
+    profile_image: "/default_avatar.png",
   });
 
   // useEffect(() => {
@@ -24,7 +24,7 @@ const page = () => {
   // }, [userInfo, newUser, router]);
 
   const onBoardUserHandler = async () => {
-    const { name, about, profileImage } = formData;
+    const { name, about, profile_image } = formData;
     if (!name || name.trim() === "" ) {
       toast("Display Name is required");
       return;
@@ -39,7 +39,7 @@ const page = () => {
         email: userInfo.email,
         name: name.trim(),
         about: about.trim(),
-        profileImage,
+        profile_image,
       });
       
       if (res.data?.user) {
@@ -89,9 +89,9 @@ const page = () => {
         <div>
           <Avatar
             type="xl"
-            image={formData.profileImage}
+            image={formData.profile_image}
             setImage={(value) =>
-              setFormData({ ...formData, profileImage: value })
+              setFormData({ ...formData, profile_image: value })
             }
           />
         </div>

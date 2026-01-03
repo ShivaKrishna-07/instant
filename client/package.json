@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "axios": "^1.13.2",
+    "emoji-picker-react": "^4.16.1",
     "firebase": "^12.7.0",
     "next": "16.1.1",
     "postcss": "^8.5.6",
@@ -17,7 +18,9 @@
     "react-dom": "19.2.3",
     "react-hot-toast": "^2.6.0",
     "react-icons": "^5.5.0",
-    "toast": "^0.5.4"
+    "socket.io-client": "^4.8.3",
+    "toast": "^0.5.4",
+    "wavesurfer.js": "^7.12.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.18",

@@ -5,6 +5,6 @@ CREATE TABLE users (
   email TEXT UNIQUE NOT NULL,
   name TEXT,
   about TEXT,
-  profileImage TEXT,
+  profile_image TEXT,
   created_at TIMESTAMP DEFAULT NOW()
 );

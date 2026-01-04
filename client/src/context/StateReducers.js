@@ -7,6 +7,9 @@ export const initialState = {
   currentChatUser: undefined,
   messages: [],
   socket: undefined,
+  searchQuery: "",
+  searchMatches: [],
+  searchIndex: 0,
 }
 
 export const reducer = (state, action) => {
@@ -45,6 +48,35 @@ export const reducer = (state, action) => {
       return {
         ...state,
         messages: [...state.messages, action.newMessage],
+      };
+    case reducerCases.UPDATE_MESSAGE:
+      return {
+        ...state,
+        messages: state.messages.map((m) =>
+          m.temp_id && action.temp_id && m.temp_id === action.temp_id
+            ? { ...m, ...action.newMessage }
+            : m
+        ),
+      };
+    case reducerCases.REMOVE_MESSAGE:
+      return {
+        ...state,
+        messages: state.messages.filter((m) => m.temp_id !== action.temp_id),
+      };
+    case reducerCases.SET_SEARCH_QUERY:
+      return {
+        ...state,
+        searchQuery: action.query,
+      };
+    case reducerCases.SET_SEARCH_RESULTS:
+      return {
+        ...state,
+        searchMatches: action.matches,
+      };
+    case reducerCases.SET_SEARCH_INDEX:
+      return {
+        ...state,
+        searchIndex: action.index,
       };
     default:
       return state;

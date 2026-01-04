@@ -154,6 +154,23 @@ function CaptureAudio({ hide }) {
 
   const sendRecording = async () => {
     if (!renderedAudio) return;
+    const tempId = `temp-${Date.now()}`;
+    const localUrl = URL.createObjectURL(renderedAudio);
+
+    const tempMessage = {
+      id: tempId,
+      temp_id: tempId,
+      message: localUrl,
+      type: "audio",
+      sender_id: userInfo.id,
+      to: currentChatUser.id,
+      created_at: new Date().toISOString(),
+      message_status: "sending",
+      duration: recordingDuration,
+    };
+
+    // optimistic add with loader UI
+    dispatch({ type: reducerCases.ADD_MESSAGE, newMessage: tempMessage });
 
     try {
       const formData = new FormData();
@@ -175,15 +192,18 @@ function CaptureAudio({ hide }) {
         message: data.message,
       });
 
+      // replace temp message with server message
       dispatch({
-        type: reducerCases.ADD_MESSAGE,
+        type: reducerCases.UPDATE_MESSAGE,
+        temp_id: tempId,
         newMessage: { ...data.message },
-        fromSelf: true,
       });
 
       hide();
     } catch (error) {
       console.error("Failed to send audio:", error);
+      // remove optimistic message on failure
+      dispatch({ type: reducerCases.REMOVE_MESSAGE, temp_id: tempId });
     }
   };
 

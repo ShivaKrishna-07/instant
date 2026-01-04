@@ -48,6 +48,22 @@ io.on('connection', (socket) => {
   
   socket.on('add-user', (userId) => {
     onlineUsers.set(userId, socket.id);
+    // broadcast to others that this user is online
+    try {
+      io.emit('user-online', userId);
+    } catch (e) {
+      console.error('emit user-online failed', e);
+    }
+  });
+
+  // respond to inquiries about whether a user is online (uses callback acknowledgement)
+  socket.on('is-online', (userId, callback) => {
+    try {
+      const online = onlineUsers && onlineUsers.has(userId);
+      if (typeof callback === 'function') callback({ online: !!online });
+    } catch (e) {
+      if (typeof callback === 'function') callback({ online: false });
+    }
   });
   
   socket.on('send-msg', (data) => {
@@ -65,6 +81,11 @@ io.on('connection', (socket) => {
     for (let [userId, socketId] of onlineUsers.entries()) {
       if (socketId === socket.id) {
         onlineUsers.delete(userId);
+        try {
+          io.emit('user-offline', userId);
+        } catch (e) {
+          console.error('emit user-offline failed', e);
+        }
         break;
       }
     }

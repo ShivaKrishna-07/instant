@@ -1,7 +1,8 @@
 import { calculateTime } from "@/utils/CalculateTime";
 import React, { useEffect, useRef, useState } from "react";
 import MessageStatus from "../common/MessageStatus";
-import { FaPause, FaPlay } from "react-icons/fa";
+import { FaPause, FaPlay, FaMicrophone } from "react-icons/fa";
+import { FaSpinner } from "react-icons/fa";
 import WaveSurfer from "wavesurfer.js";
 
 function VoiceMessage({ message, userInfo, currentChatUser }) {
@@ -73,32 +74,60 @@ function VoiceMessage({ message, userInfo, currentChatUser }) {
 
   return (
     <div
-      className={`flex items-center gap-3 px-4 py-2 text-white rounded-md ${
+      className={`flex items-center gap-3 px-3 py-2 text-white rounded-md ${
         message.sender_id === currentChatUser.id
           ? "bg-incoming-background"
           : "bg-outgoing-background"
-      }`}
+      } max-w-[70%]`}
     >
-      <button onClick={isPlaying ? handlePauseAudio : handlePlayAudio}>
-        {isPlaying ? (
-          <FaPause className="text-xl" />
-        ) : (
-          <FaPlay className="text-xl" />
-        )}
-      </button>
-      <div className="relative">
-        <div className="w-60" ref={waveformRef} />
+      {/* Avatar with mic overlay */}
+      <div className="relative flex-shrink-0">
+        <img
+          src={
+            message.sender_id === currentChatUser.id
+              ? currentChatUser?.profile_image || "/default_avatar.png"
+              : userInfo?.profile_image || "/default_avatar.png"
+          }
+          alt="avatar"
+          className="w-10 h-10 rounded-full object-cover"
+        />
+        <div className="absolute bottom-0 right-0 bg-accent p-1 rounded-full">
+          <FaMicrophone className="text-white text-xs" />
+        </div>
       </div>
-      <div className="flex gap-1 items-end">
+
+      {/* Play / Pause / Loader */}
+      <div className="flex items-center gap-3">
+        <button
+          onClick={isPlaying ? handlePauseAudio : handlePlayAudio}
+          className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center"
+        >
+          {message.message_status === "sending" ? (
+            <FaSpinner className="animate-spin text-white/80" />
+          ) : isPlaying ? (
+            <FaPause className="text-white" />
+          ) : (
+            <FaPlay className="text-white" />
+          )}
+        </button>
+
+        <div className="w-40">
+          <div ref={waveformRef} className="w-full" />
+        </div>
+      </div>
+
+      <div className="flex flex-col items-end ml-auto gap-1">
         <span className="text-bubble-meta text-[11px] text-white/60">
           {formatTime(isPlaying ? currentPlaybackTime : totalDuration)}
         </span>
-        <span className="text-bubble-meta text-[11px] text-white/60">
-          {calculateTime?.(message.created_at) || ""}
-        </span>
-        {message.sender_id === userInfo.id && (
-          <MessageStatus status={message.message_status} />
-        )}
+        <div className="flex items-center gap-2">
+          <span className="text-bubble-meta text-[11px] text-white/60">
+            {calculateTime?.(message.created_at) || ""}
+          </span>
+          {message.sender_id === userInfo.id && (
+            <MessageStatus status={message.message_status} />
+          )}
+        </div>
       </div>
     </div>
   );

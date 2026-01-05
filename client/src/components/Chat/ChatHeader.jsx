@@ -4,6 +4,7 @@ import { MdCall, MdVideocam, MdSearch, MdMoreVert } from "react-icons/md";
 import { useStateProvider } from "@/context/StateContext";
 import { reducerCases } from "@/context/constants";
 import SearchBar from "./SearchBar";
+import { toast } from "react-hot-toast";
 
 function ChatHeader() {
   const [{ currentChatUser, searchMatches = [], searchIndex = 0, searchQuery = "", socket }, dispatch] = useStateProvider();
@@ -33,33 +34,28 @@ function ChatHeader() {
   };
 
   // presence state (derived from socket only)
-  const [online, setOnline] = useState(false);
-  const [checkingOnline, setCheckingOnline] = useState(false);
+  // null = unknown / not checked, true = online, false = offline
+  const [online, setOnline] = useState(null);
 
   // query presence via socket callback when chat user changes
   useEffect(() => {
     if (!currentChatUser?.id) {
-      setOnline(false);
-      setCheckingOnline(false);
+      setOnline(null);
       return;
     }
 
     if (!socket || !socket.current) {
-      // if socket not ready, show checking until socket connects
-      setOnline(false);
-      setCheckingOnline(true);
+      // socket not ready -> unknown status
+      setOnline(null);
       return;
     }
 
-    setCheckingOnline(true);
     try {
       socket.current.emit('is-online', currentChatUser.id, (res) => {
-        setOnline(!!(res && res.online));
-        setCheckingOnline(false);
+        setOnline(res && !!res.online ? true : false);
       });
     } catch (e) {
-      setOnline(false);
-      setCheckingOnline(false);
+      setOnline(null);
     }
 
     // subscribe to real-time updates
@@ -108,13 +104,17 @@ function ChatHeader() {
         <div className="flex flex-col">
           <span className="text-primary-strong">{currentChatUser?.name || "John Doe"}</span>
           <span className="text-secondary text-sm">
-            {checkingOnline ? "checking..." : online ? "online" : "offline"}
+            {online === null ? "" : online ? "online" : "offline"}
           </span>
         </div>
       </div>
       <div className="flex gap-5">
         <MdCall className="text-panel-header-icon cursor-pointer text-xl" />
-        <MdVideocam className="text-panel-header-icon cursor-pointer text-xl" />
+        <MdVideocam className="text-panel-header-icon cursor-pointer text-xl" onClick={() => {
+          // trigger start-call event to initiate WebRTC flow
+          const targetId = currentChatUser?.id;
+          if (targetId) window.dispatchEvent(new CustomEvent('start-call', { detail: { targetId } }));
+        }} />
         <MdSearch className="text-panel-header-icon cursor-pointer text-xl" onClick={() => setShowSearch(!showSearch)} />
         <MdMoreVert className="text-panel-header-icon cursor-pointer text-xl" />
       </div>

@@ -64,7 +64,7 @@ function InnerFetch({ children }) {
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname]);
+  }, [pathname, router]);
 
   return (
     <>

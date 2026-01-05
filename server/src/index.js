@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import authRoutes from './routes/AuthRoutes.js'
 import messagesRoutes from './routes/MessageRoutes.js'
+import conversationsRoutes from './routes/ConversationRoutes.js'
 import authMiddleware from './middlewares/AuthMiddleware.js';
 import { Server } from 'socket.io';
 import './config/firebaseAdmin.js';
@@ -15,7 +16,16 @@ import pool from './db/index.js';
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(cors({ origin: process.env.CLIENT_ORIGIN || 'http://localhost:3000', credentials: true }));
+app.use(
+  cors({
+    origin: [
+      process.env.CLIENT_ORIGIN || "http://localhost:3000",
+      "http://10.88.50.119:3000", "https://1461e7126520.ngrok-free.app"
+    ],
+    credentials: true,
+  })
+);
+
 app.use(cookieParser());
 app.use(express.json());
 
@@ -28,6 +38,7 @@ app.use('/api/auth', authRoutes);
 // Protect remaining API routes
 app.use('/api', authMiddleware);
 app.use('/api/messages', messagesRoutes);
+app.use('/api/conversations', conversationsRoutes);
 
 const server = app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
@@ -66,6 +77,45 @@ io.on('connection', (socket) => {
     }
   });
   
+  // WebRTC signaling: caller -> callee relay
+  socket.on('call-user', (data) => {
+    // data: { to, from, offer }
+    const targetSocket = onlineUsers.get(data.to);
+    if (targetSocket) {
+      socket.to(targetSocket).emit('incoming-call', { from: data.from, offer: data.offer, fromMeta: data.fromMeta || null });
+    }
+  });
+
+  socket.on('accept-call', (data) => {
+    // data: { to, from, answer }
+    const targetSocket = onlineUsers.get(data.to);
+    if (targetSocket) {
+      socket.to(targetSocket).emit('call-accepted', { from: data.from, answer: data.answer });
+    }
+  });
+
+  socket.on('reject-call', (data) => {
+    const targetSocket = onlineUsers.get(data.to);
+    if (targetSocket) {
+      socket.to(targetSocket).emit('call-rejected', { from: data.from });
+    }
+  });
+
+  socket.on('ice-candidate', (data) => {
+    // data: { to, from, candidate }
+    const targetSocket = onlineUsers.get(data.to);
+    if (targetSocket) {
+      socket.to(targetSocket).emit('ice-candidate', { from: data.from, candidate: data.candidate });
+    }
+  });
+
+  socket.on('end-call', (data) => {
+    const targetSocket = onlineUsers.get(data.to);
+    if (targetSocket) {
+      socket.to(targetSocket).emit('call-ended', { from: data.from });
+    }
+  });
+
   socket.on('send-msg', (data) => {
     const sendUserSocket = onlineUsers.get(data.to);
     

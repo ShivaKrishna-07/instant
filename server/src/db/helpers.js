@@ -83,7 +83,7 @@ export async function deleteMessage(id) {
 export async function getConversationsForUser(userId) {
   // Get partner ids and latest message time
   const res = await query(
-    `SELECT latest.partnerId, u.name, u.profile_image, m.message, m.type, m.message_status, m.created_at as lastMessageAt,
+    `SELECT latest.partnerId, u.name, u.profile_image, m.message, m.type, m.message_status, m.sender_id as last_sender_id, m.created_at as lastMessageAt,
       COALESCE(unread.unreadCount, 0) AS unreadCount
      FROM (
        SELECT CASE WHEN sender_id = $1 THEN receiver_id ELSE sender_id END AS partnerId, MAX(created_at) AS lastAt

@@ -7,6 +7,9 @@ import { reducerCases } from "@/context/constants";
 import Chat from "./Chat/Chat";
 import apiClient from "@/utils/api";
 import { io } from "socket.io-client";
+import dynamic from 'next/dynamic';
+
+const CallManager = dynamic(() => import('./Call/CallManager'), { ssr: false });
 
 function Main() {
   const [{userInfo, currentChatUser}, dispatch] = useStateProvider();
@@ -53,6 +56,7 @@ function Main() {
   return <div className="grid grid-cols-main h-screen w-screen max-h-screen max-w-screen overflow-hidden">
     <ChatList />
     { currentChatUser ? <Chat /> : <Empty /> }
+    <CallManager />
   </div>;
 }
 

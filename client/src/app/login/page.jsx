@@ -3,7 +3,7 @@
 import Image from "next/image";
 import React, { useEffect } from "react";
 import { FcGoogle } from "react-icons/fc";
-import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { getRedirectResult, GoogleAuthProvider, signInWithPopup, signInWithRedirect } from "firebase/auth";
 import { auth } from "@/config/firebase";
 import apiClient from "@/utils/api";
 import { useRouter } from "next/navigation";
@@ -17,7 +17,7 @@ const page = () => {
   const handleLogin = async () => {
     try {
       const provider = new GoogleAuthProvider();
-      const { user } = await signInWithPopup(auth, provider);
+      const { user } = await signInWithRedirect(auth, provider);
       const { displayName, email, photoURL } = user;
 
       // Get Firebase ID token
@@ -47,6 +47,51 @@ const page = () => {
       alert('Login failed. Please try again.');
     }
   };
+
+  useEffect(() => {
+  const handleRedirectResult = async () => {
+    try {
+      const result = await getRedirectResult(auth);
+
+      if (!result) return; // user didn't just login
+
+      const { user } = result;
+      const { displayName, email, photoURL } = user;
+
+      // Get Firebase ID token
+      const idToken = await user.getIdToken();
+      localStorage.setItem("authToken", idToken);
+
+      // Check if user exists
+      const res = await apiClient.post("auth/check-user", { email });
+
+      if (res.data.exists) {
+        router.replace("/");
+      } else {
+        dispatch({
+          type: reducerCases.SET_NEW_USER,
+          newUser: true,
+        });
+
+        dispatch({
+          type: reducerCases.SET_USER_INFO,
+          userInfo: {
+            name: displayName,
+            email,
+            profile_image: photoURL,
+          },
+        });
+
+        router.replace("/onboarding");
+      }
+    } catch (error) {
+      console.error("Redirect login error:", error);
+    }
+  };
+
+  handleRedirectResult();
+}, []);
+
 
   return (
     <div className="flex justify-center items-center bg-panel-header-background h-screen w-screen flex-col gap-6">

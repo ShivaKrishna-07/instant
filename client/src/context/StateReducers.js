@@ -10,6 +10,11 @@ export const initialState = {
   searchQuery: "",
   searchMatches: [],
   searchIndex: 0,
+  // call state
+  outgoingCall: null, // { targetId, kind }
+  incomingCall: null, // { from, fromMeta, offer, kind }
+  callActive: false,
+  callKind: 'video',
 }
 
 export const reducer = (state, action) => {
@@ -43,6 +48,35 @@ export const reducer = (state, action) => {
       return {
         ...state,
         socket: action.socket,
+      };
+    case reducerCases.START_CALL:
+      return {
+        ...state,
+        outgoingCall: action.payload || null,
+      };
+    case reducerCases.CLEAR_OUTGOING_CALL:
+      return {
+        ...state,
+        outgoingCall: null,
+      };
+    case reducerCases.SET_INCOMING_CALL:
+      return {
+        ...state,
+        incomingCall: action.payload || null,
+        callKind: action.payload?.kind || state.callKind,
+      };
+    case reducerCases.CLEAR_INCOMING_CALL:
+      return {
+        ...state,
+        incomingCall: null,
+      };
+    case reducerCases.END_CALL:
+      return {
+        ...state,
+        outgoingCall: null,
+        incomingCall: null,
+        callActive: false,
+        callKind: 'video',
       };
     case reducerCases.ADD_MESSAGE:
       return {

@@ -1,18 +1,24 @@
 "use client"
 import React, { useEffect, useRef, useState } from 'react';
 import { useStateProvider } from '@/context/StateContext';
+import { reducerCases } from '@/context/constants';
 import VideoCallModal from './VideoCallModal';
+import VoiceCallModal from './VoiceCallModal';
 import IncomingCallModal from './IncomingCallModal';
 
 const defaultIceServers = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
 
 export default function CallManager() {
-  const [{ userInfo, socket, currentChatUser }, dispatch] = useStateProvider();
+  const [{ userInfo, socket, currentChatUser, outgoingCall, incomingCall }, dispatch] = useStateProvider();
   const pcRef = useRef(null);
   const localStreamRef = useRef(null);
   const [remoteStream, setRemoteStream] = useState(null);
   const [callOpen, setCallOpen] = useState(false);
-  const [incoming, setIncoming] = useState(null); // { from, fromMeta, offer }
+  const [callKind, setCallKind] = useState('video');
+
+  useEffect(() => {
+    if (incomingCall) setCallKind(incomingCall.kind || 'video');
+  }, [incomingCall]);
 
   useEffect(() => {
     if (!socket || !socket.current) return;
@@ -20,7 +26,9 @@ export default function CallManager() {
     const s = socket.current;
 
     const handleIncoming = ({ from, offer, fromMeta }) => {
-      setIncoming({ from, offer, fromMeta });
+      const kind = (fromMeta && fromMeta.kind) || 'video';
+      // push incoming call into global state so UI can respond
+      dispatch({ type: reducerCases.SET_INCOMING_CALL, payload: { from, offer, fromMeta, kind } });
     };
 
     const handleCallAccepted = async ({ from, answer }) => {
@@ -59,15 +67,18 @@ export default function CallManager() {
     };
   }, [socket]);
 
-  // listen for UI-triggered start call events
+  // react to outgoing call requests from context
   useEffect(() => {
-    const handler = (e) => {
-      const targetId = e?.detail?.targetId;
-      if (targetId) callUser(targetId);
-    };
-    window.addEventListener('start-call', handler);
-    return () => window.removeEventListener('start-call', handler);
-  }, [socket, userInfo]);
+    if (!outgoingCall || !outgoingCall.targetId) return;
+    const { targetId, kind } = outgoingCall;
+    // start outgoing call
+    callUser(targetId, kind).then(() => {
+      // clear outgoing call request once handled
+      try { dispatch({ type: reducerCases.CLEAR_OUTGOING_CALL }); } catch(e) {}
+    }).catch(() => {
+      try { dispatch({ type: reducerCases.CLEAR_OUTGOING_CALL }); } catch(e) {}
+    });
+  }, [outgoingCall]);
 
   const cleanupCall = () => {
     try {
@@ -82,12 +93,14 @@ export default function CallManager() {
     } catch (e) {}
     setRemoteStream(null);
     setCallOpen(false);
-    setIncoming(null);
+    try { dispatch({ type: reducerCases.CLEAR_INCOMING_CALL }); } catch(e) {}
+    try { dispatch({ type: reducerCases.END_CALL }); } catch(e) {}
   };
 
-  const startLocalStream = async () => {
+  const startLocalStream = async (kind = 'video') => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      const constraints = kind === 'voice' ? { audio: true, video: false } : { audio: true, video: true };
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
       localStreamRef.current = stream;
       return stream;
     } catch (e) {
@@ -109,9 +122,10 @@ export default function CallManager() {
     return pc;
   };
 
-  const callUser = async (targetId) => {
+  const callUser = async (targetId, kind = 'video') => {
     try {
-      const stream = await startLocalStream();
+      setCallKind(kind);
+      const stream = await startLocalStream(kind);
       const pc = createPeerConnection(targetId);
       pcRef.current = pc;
       // add tracks
@@ -120,7 +134,7 @@ export default function CallManager() {
       const offer = await pc.createOffer();
       await pc.setLocalDescription(offer);
 
-      socket.current.emit('call-user', { to: targetId, from: userInfo.id, offer, fromMeta: { name: userInfo.name } });
+      socket.current.emit('call-user', { to: targetId, from: userInfo.id, offer, fromMeta: { name: userInfo.name, kind } });
       setCallOpen(true);
     } catch (e) {
       console.error('callUser error', e);
@@ -128,29 +142,31 @@ export default function CallManager() {
   };
 
   const acceptIncoming = async () => {
-    if (!incoming) return;
+    const call = incomingCall;
+    if (!call) return;
     try {
-      const stream = await startLocalStream();
-      const pc = createPeerConnection(incoming.from);
+      const stream = await startLocalStream(call.kind || 'video');
+      const pc = createPeerConnection(call.from);
       pcRef.current = pc;
       stream.getTracks().forEach(track => pc.addTrack(track, stream));
 
-      await pc.setRemoteDescription(new RTCSessionDescription(incoming.offer));
+      await pc.setRemoteDescription(new RTCSessionDescription(call.offer));
       const answer = await pc.createAnswer();
       await pc.setLocalDescription(answer);
 
-      socket.current.emit('accept-call', { to: incoming.from, from: userInfo.id, answer });
+      socket.current.emit('accept-call', { to: call.from, from: userInfo.id, answer });
       setCallOpen(true);
-      setIncoming(null);
+      dispatch({ type: reducerCases.CLEAR_INCOMING_CALL });
     } catch (e) {
       console.error('acceptIncoming error', e);
     }
   };
 
   const rejectIncoming = () => {
-    if (!incoming) return;
-    socket.current.emit('reject-call', { to: incoming.from, from: userInfo.id });
-    setIncoming(null);
+    const call = incomingCall;
+    if (!call) return;
+    socket.current.emit('reject-call', { to: call.from, from: userInfo.id });
+    dispatch({ type: reducerCases.CLEAR_INCOMING_CALL });
   };
 
   const endCall = () => {
@@ -159,15 +175,19 @@ export default function CallManager() {
       return;
     }
     // notify peer
-    const partnerId = currentChatUser?.id || (incoming && incoming.from);
+    const partnerId = currentChatUser?.id || (incomingCall && incomingCall.from);
     if (partnerId) socket.current.emit('end-call', { to: partnerId, from: userInfo.id });
     cleanupCall();
   };
 
   return (
     <>
-      <IncomingCallModal isOpen={!!incoming} callerName={incoming?.fromMeta?.name} onAccept={acceptIncoming} onReject={rejectIncoming} />
-      <VideoCallModal isOpen={callOpen} onClose={endCall} pcRef={pcRef} localStream={localStreamRef.current} remoteStream={remoteStream} />
+      <IncomingCallModal isOpen={!!incomingCall} callerName={incomingCall?.fromMeta?.name} kind={incomingCall?.kind} onAccept={acceptIncoming} onReject={rejectIncoming} />
+      {callKind === 'voice' ? (
+        <VoiceCallModal isOpen={callOpen} onClose={endCall} localStream={localStreamRef.current} remoteStream={remoteStream} />
+      ) : (
+        <VideoCallModal isOpen={callOpen} onClose={endCall} pcRef={pcRef} localStream={localStreamRef.current} remoteStream={remoteStream} />
+      )}
     </>
   );
 }

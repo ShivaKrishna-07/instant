@@ -109,12 +109,15 @@ function ChatHeader() {
         </div>
       </div>
       <div className="flex gap-5">
-        <MdCall className="text-panel-header-icon cursor-pointer text-xl" />
-        <MdVideocam className="text-panel-header-icon cursor-pointer text-xl" onClick={() => {
-          // trigger start-call event to initiate WebRTC flow
-          const targetId = currentChatUser?.id;
-          if (targetId) window.dispatchEvent(new CustomEvent('start-call', { detail: { targetId } }));
-        }} />
+          <MdCall className="text-panel-header-icon cursor-pointer text-xl" onClick={() => {
+            const targetId = currentChatUser?.id;
+            if (targetId) dispatch({ type: reducerCases.START_CALL, payload: { targetId, kind: 'voice' } });
+          }} />
+          <MdVideocam className="text-panel-header-icon cursor-pointer text-xl" onClick={() => {
+            // trigger start-call action to initiate WebRTC flow (video)
+            const targetId = currentChatUser?.id;
+            if (targetId) dispatch({ type: reducerCases.START_CALL, payload: { targetId, kind: 'video' } });
+          }} />
         <MdSearch className="text-panel-header-icon cursor-pointer text-xl" onClick={() => setShowSearch(!showSearch)} />
         <MdMoreVert className="text-panel-header-icon cursor-pointer text-xl" />
       </div>

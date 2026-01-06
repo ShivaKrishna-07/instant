@@ -17,7 +17,7 @@ function Main() {
   console.log("userInfo in Main:", userInfo);
   useEffect(()=>{
     if(userInfo && userInfo.id){
-      socket.current = io(process.env.NEXT_PUBLIC_SOCKET_IO_URL);
+      socket.current = io(process.env.NEXT_PUBLIC_BASE_API_URL);
       
       socket.current.on('connect', () => {
         socket.current.emit("add-user", userInfo.id);

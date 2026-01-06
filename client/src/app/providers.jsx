@@ -2,6 +2,7 @@
 
 import { StateProvider } from "@/context/StateContext";
 import reducer, { initialState } from "@/context/StateReducers";
+import SessionProvider from "@/components/providers/SessionProvider";
 import { Toaster } from "react-hot-toast";
 import React, { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
@@ -11,11 +12,13 @@ import apiClient from "@/utils/api";
 
 export default function Providers({ children }) {
   return (
-    <StateProvider initialState={initialState} reducer={reducer}>
-      <InnerFetch>
-        {children}
-      </InnerFetch>
-    </StateProvider>
+    <SessionProvider>
+      <StateProvider initialState={initialState} reducer={reducer}>
+        <InnerFetch>
+          {children}
+        </InnerFetch>
+      </StateProvider>
+    </SessionProvider>
   );
 }
 

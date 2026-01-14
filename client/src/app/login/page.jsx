@@ -13,7 +13,6 @@ import { motion } from "framer-motion";
 import ThemeToggle from "@/components/ThemeToggle";
 import Logo from "@/components/Logo";
 import FloatingBubbles from "@/components/FloatingBubbles";
-import loginVisual from "@/assets/login-visual.png";
 import { Button } from "@/components/ui/button";
 
 export default function LoginPage() {
@@ -184,9 +183,11 @@ export default function LoginPage() {
         <FloatingBubbles />
         <div className="absolute inset-0 flex items-center justify-center">
           <Image
-            src={loginVisual}
+            src="/assets/login-visual.png"
             alt="Instant messaging"
             className="w-full h-full object-cover opacity-40"
+            width={100}
+            height={100}
           />
         </div>
       </motion.div>

@@ -7,31 +7,23 @@ import { Input } from "@/components/ui/input";
 import Logo from "@/components/Logo";
 import ThemeToggle from "@/components/ThemeToggle";
 import { useRouter } from "next/navigation";
-import { ChevronRight, Check } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { useStateProvider } from "@/context/StateContext";
 import apiClient from "@/utils/api";
 import { toast } from "@/hooks/use-toast";
 import { Camera, Upload, Image as ImageIcon, X, User } from "lucide-react";
 import PhotoPicker from "@/components/common/PhotoPicker";
-import PhotoLibrary from "@/components/common/PhotoLibrary";
 import CapturePhoto from "@/components/common/CapturePhoto";
 
-// Import cartoon avatars
-import avatar1 from "@/assets/avatars/avatar-1.png";
-import avatar2 from "@/assets/avatars/avatar-2.png";
-import avatar3 from "@/assets/avatars/avatar-3.png";
-import avatar4 from "@/assets/avatars/avatar-4.png";
-import avatar5 from "@/assets/avatars/avatar-5.png";
-import avatar6 from "@/assets/avatars/avatar-6.png";
 import Image from "next/image";
 
 const cartoonAvatars = [
-  { id: "1", src: avatar1, name: "Happy Kid" },
-  { id: "2", src: avatar2, name: "Cute Cat" },
-  { id: "3", src: avatar3, name: "Puppy" },
-  { id: "4", src: avatar4, name: "Panda" },
-  { id: "5", src: avatar5, name: "Fox" },
-  { id: "6", src: avatar6, name: "Bunny" },
+  { id: "1", src: "/assets/avatars/avatar-1.png", name: "Happy Kid" },
+  { id: "2", src: "/assets/avatars/avatar-2.png", name: "Cute Cat" },
+  { id: "3", src: "/assets/avatars/avatar-3.png", name: "Puppy" },
+  { id: "4", src: "/assets/avatars/avatar-4.png", name: "Panda" },
+  { id: "5", src: "/assets/avatars/avatar-5.png", name: "Fox" },
+  { id: "6", src: "/assets/avatars/avatar-6.png", name: "Bunny" },
 ];
 
 export default function OnboardingPage() {
@@ -54,7 +46,7 @@ export default function OnboardingPage() {
       toast("Display Name is required");
       return;
     }
-    if (name.length < 3) {
+    if (name.trim().length < 3) {
       toast("Display Name must be at least 3 characters long");
       return;
     }
@@ -64,7 +56,7 @@ export default function OnboardingPage() {
         email: userInfo.email,
         name: name.trim(),
         about: about.trim(),
-        profile_image,
+        profile_image: profile_image === "" ? "/default_avatar.png" : profile_image,
       });
 
       if (res.data?.user) {
@@ -324,7 +316,7 @@ export default function OnboardingPage() {
                           : "border-border hover:border-muted-foreground"
                       }`}
                     >
-                      <Image src={item.src} className="w-full h-full object-cover" alt="avatar" />
+                      <Image src={item.src} className="w-full h-full object-cover" alt="avatar" width={100} height={100} />
                     </motion.button>
                   ))}
                 </div>

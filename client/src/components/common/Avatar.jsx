@@ -1,13 +1,13 @@
 "use client";
 import Image from "next/image";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, forwardRef, useImperativeHandle } from "react";
 import { FaCamera } from "react-icons/fa";
 import ContextMenu from "./ContextMenu";
 import PhotoPicker from "./PhotoPicker";
 import PhotoLibrary from "./PhotoLibrary";
 import CapturePhoto from "./CapturePhoto";
 
-function Avatar({ type, image, setImage }) {
+function Avatar({ type, image, setImage }, ref) {
   const [hover, setHover] = useState(false);
   const [isContextMenuVisible, setIsContextMenuVisible] = useState(false);
   const [contextMenuCordinates, setContextMenuCordinates] = useState({
@@ -62,6 +62,14 @@ function Avatar({ type, image, setImage }) {
     const previewUrl = URL.createObjectURL(file);
     setImage(previewUrl);
   };
+
+  // expose imperative handlers so parent can trigger actions (upload / camera / library / remove)
+  useImperativeHandle(ref, () => ({
+    openPicker: () => openPicker(),
+    openCapture: () => setShowCapturePhoto(true),
+    openLibrary: () => setShowPhotoLibrary(true),
+    removePhoto: () => setImage("/default_avatar.png"),
+  }));
 
   return (
     <>
@@ -133,4 +141,4 @@ function Avatar({ type, image, setImage }) {
   );
 }
 
-export default Avatar;
+export default forwardRef(Avatar);

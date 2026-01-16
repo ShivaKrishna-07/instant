@@ -53,11 +53,15 @@ function Main() {
     }
   }, [currentChatUser]);
 
-  return <div className="grid grid-cols-main h-screen w-screen max-h-screen max-w-screen overflow-hidden">
-    <ChatList />
-    { currentChatUser ? <Chat /> : <Empty /> }
-    <CallManager />
-  </div>;
+  return (
+    <div className="h-screen w-screen flex overflow-hidden">
+      <ChatList />
+      <div className="flex-1 min-h-0 flex flex-col">
+        {currentChatUser ? <Chat /> : <Empty />}
+      </div>
+      <CallManager />
+    </div>
+  );
 }
 
 export default Main;

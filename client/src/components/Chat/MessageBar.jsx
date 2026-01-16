@@ -9,6 +9,10 @@ import { MdSend } from "react-icons/md";
 import PhotoPicker from "../common/PhotoPicker";
 import { FaMicrophone } from "react-icons/fa";
 import dynamic from "next/dynamic";
+import { Input } from "../ui/input";
+import { motion } from "framer-motion";
+import { Paperclip, Smile } from "lucide-react";
+import { Button } from "../ui/button";
 
 const CaptureAudio = dynamic(() => import("../common/CaptureAudio"), {
   ssr: false,
@@ -116,7 +120,10 @@ function MessageBar() {
   };
 
   return (
-    <div className="bg-panel-header-background h-20 px-4 flex items-center gap-6 relative">
+    <motion.div 
+    initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+    className="border-t border-border h-18 px-4 flex items-center gap-2 relative bg-card">
       {!showAudioRecorder ? (
         <>
           {isUploading && (
@@ -129,40 +136,45 @@ function MessageBar() {
           )}
           {/* Left icons */}
           <div className="flex gap-5">
-            <BsEmojiSmile
-              className="text-panel-header-icon cursor-pointer text-xl"
-              title="Emoji"
-              id="emoji-open"
-              onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-            />
-            {showEmojiPicker && (
-              <div
-                ref={emojiPickerRef}
-                className="absolute bottom-24 left-16 z-40"
-              >
-                <EmojiPicker
-                  onEmojiClick={(e) => setMessage(message + e.emoji)}
-                  theme="dark"
-                />
-              </div>
-            )}
-            <ImAttachment
-              className="text-panel-header-icon cursor-pointer text-xl"
-              title="Attach File"
-              onClick={() => fileInputRef.current?.click()}
-            />
+            
+            <Button variant="icon" size="icon" className="shrink-0 w-9 h-9 sm:w-10 sm:h-10">
+              <Paperclip size={18} className="sm:w-5 sm:h-5" />
+            </Button>
           </div>
 
           {/* Input */}
           <div className="flex-1 full rounded-lg h-10 flex items-center">
-            <input
-              type="text"
-              placeholder="Type a message"
-              className="bg-input-background text-sm h-10 px-5 text-white py-5 w-full rounded-lg focus:outline-none"
+            <Input
+              placeholder="Type a message..."
+              className="pr-10 text-sm sm:text-base"
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               onKeyPress={handleKeyPress}
             />
+            <Button
+              variant="icon"
+              size="iconSm"
+              className="absolute right-18 top-1/2 -translate-y-1/2"
+              title="Emoji"
+              id="emoji-open"
+              onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+            >
+
+            <Smile
+              size={18}
+              />
+              </Button>
+            {showEmojiPicker && (
+              <div
+              ref={emojiPickerRef}
+              className="absolute bottom-19 right-16 z-40"
+              >
+                <EmojiPicker
+                  onEmojiClick={(e) => setMessage(message + e.emoji)}
+                  theme="dark"
+                  />
+              </div>
+            )}
           </div>
           <div className="flex w-10 items-center justify-center">
             <button>
@@ -186,7 +198,7 @@ function MessageBar() {
       ) : (
         <CaptureAudio hide={() => setShowAudioRecorder(false)} />
       )}
-    </div>
+    </motion.div>
   );
 }
 

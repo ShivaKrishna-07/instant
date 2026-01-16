@@ -1,22 +1,22 @@
 import React from "react";
-import { BiSearchAlt2 } from "react-icons/bi";
-import { BsFilter } from "react-icons/bs";
+import { Search, Sliders } from "lucide-react";
+import { Input } from "@/components/ui/input";
 
-function SearchBar() {
-  return <div className="bg-search-input-container-background flex py-3 pl-5 items-center gap-3 h-14">
-    <div className="bg-panel-header-background flex items-center gap-5 px-3 py-1 rounded-lg grow">
-      <div>
-        <BiSearchAlt2 className="text-panel-header-icon cursor-pointer text-lg" />
-      </div>
-      <div>
-        <input type="text" placeholder="Search or start new chat" className="bg-transparent text-sm focus:outline-none text-white w-full"  />
-      </div>
+function SearchBar({ placeholder, className, searchQuery, setSearchQuery }) {
+  return (
+    <div className="relative">
+      <Search
+        size={18}
+        className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+      />
+      <Input
+        placeholder="Search"
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        className="pl-10"
+      />
     </div>
-    <div className="pr-5 pl-3"> 
-      <BsFilter className="text-panel-header-icon cursor-pointer text-lg" />
-
-    </div>
-  </div>;
+  );
 }
 
 export default SearchBar;

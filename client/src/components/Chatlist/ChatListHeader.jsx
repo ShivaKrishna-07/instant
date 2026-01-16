@@ -1,5 +1,6 @@
-'use client'
+"use client"
 import { useState, useRef, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { BsFillChatLeftTextFill, BsThreeDotsVertical } from "react-icons/bs";
 import { BiLogOut } from "react-icons/bi";
 import { signOut } from "next-auth/react";
@@ -68,23 +69,37 @@ function ChatListHeader() {
           onClick={handleAllContactsPage} 
         />
         <div ref={dropdownRef} className="relative">
-          <BsThreeDotsVertical 
-            className="text-panel-header-icon cursor-pointer text-xl" 
+          <BsThreeDotsVertical
+            className="text-panel-header-icon cursor-pointer text-xl"
             title="Menu"
             onClick={() => setShowDropdown(!showDropdown)}
           />
-          
-          {showDropdown && (
-            <div className="absolute right-0 top-8 bg-dropdown-background rounded-md shadow-lg py-2 z-50 min-w-[150px]">
-              <button
-                onClick={handleLogout}
-                className="w-full px-4 py-2 text-left flex items-center gap-3 hover:bg-background-default-hover text-white transition-colors"
+
+          <AnimatePresence>
+            {showDropdown && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: -6 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: -6 }}
+                transition={{ duration: 0.12 }}
+                className="absolute right-0 top-full mt-2 bg-card border border-border rounded-xl shadow-xl overflow-hidden w-48 z-50"
               >
-                <BiLogOut className="text-xl" />
-                <span>Logout</span>
-              </button>
-            </div>
-          )}
+                <motion.button
+                  initial={{ opacity: 0, x: -8 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.12 }}
+                  onClick={() => {
+                    setShowDropdown(false);
+                    handleLogout();
+                  }}
+                  className="w-full px-4 py-3 flex items-center gap-3 hover:bg-muted transition-colors text-left"
+                >
+                  <BiLogOut className="text-xl" />
+                  <span>Logout</span>
+                </motion.button>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </div>

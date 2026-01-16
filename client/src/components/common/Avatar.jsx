@@ -76,12 +76,23 @@ function Avatar({ type, image, setImage }, ref) {
       <div className="flex items-center justify-center">
         {type === "sm" && (
           <div className="relative h-10 w-10">
-            <Image src={image} alt="avatar" className="rounded-full" fill />
+            {typeof image === "string" ? (
+              // plain img for dynamic object/data URLs or simple paths
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={image} alt="avatar" className="rounded-full w-full h-full object-cover" />
+            ) : (
+              <Image src={image} alt="avatar" className="rounded-full" fill />
+            )}
           </div>
         )}
         {type === "lg" && (
           <div className="relative h-14 w-14">
-            <Image src={image} alt="avatar" className="rounded-full" fill />
+            {typeof image === "string" ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={image} alt="avatar" className="rounded-full w-full h-full object-cover" />
+            ) : (
+              <Image src={image} alt="avatar" className="rounded-full" fill />
+            )}
           </div>
         )}
         {type === "xl" && (
@@ -107,13 +118,18 @@ function Avatar({ type, image, setImage }, ref) {
               </span>
             </div>
             <div className="h-60 w-60">
-              <Image
-                src={image}
-                alt="avatar"
-                className="rounded-full"
-                fill
-                unoptimized
-              />
+              {typeof image === "string" ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={image} alt="avatar" className="rounded-full w-full h-full object-cover" />
+              ) : (
+                <Image
+                  src={image}
+                  alt="avatar"
+                  className="rounded-full"
+                  fill
+                  unoptimized
+                />
+              )}
             </div>
           </div>
         )}

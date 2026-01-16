@@ -8,8 +8,8 @@ function ImageMessage({ message, userInfo, currentChatUser }) {
     <div
       className={`p-1 rounded-lg ${
         message.sender_id === currentChatUser.id
-          ? "bg-incoming-background"
-          : "bg-outgoing-background"
+          ? "bg-muted text-foreground"
+          : "bg-primary text-primary-foreground"
       }`}
     >
       <div className="relative">
@@ -22,7 +22,7 @@ function ImageMessage({ message, userInfo, currentChatUser }) {
         />
       </div>
       <div className="flex justify-end gap-1 items-end mt-1">
-        <span className="text-bubble-meta text-[11px] text-white/60">
+        <span className="text-[10px] text-primary-foreground">
           {calculateTime?.(message.created_at) || ""}
         </span>
         {message.sender_id === userInfo.id && (

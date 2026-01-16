@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import apiClient from "@/utils/api";
 import ChatLIstItem from "./ChatLIstItem";
 
@@ -27,12 +28,19 @@ function List() {
   }, []);
 
   return (
-    <div className="bg-search-input-container-background flex-auto overflow-auto max-h-full custom-scrollbar">
+    <div className="bg-search-input-container-background flex-1 overflow-auto min-h-0 custom-scrollbar">
       {loading ? (
         <div className="p-4 text-secondary">Loading...</div>
       ) : (
-        conversations.map((c) => (
-          <ChatLIstItem key={c.partnerid || c.partnerId} data={c} />
+        conversations.map((c, idx) => (
+          <motion.div
+            key={c.partnerid || c.partnerId || c.id}
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.2, delay: idx * 0.05 }}
+          >
+            <ChatLIstItem data={c} />
+          </motion.div>
         ))
       )}
     </div>

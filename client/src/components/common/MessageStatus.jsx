@@ -1,10 +1,11 @@
 import React from "react";
 import { IoCheckmarkDone, IoCheckmarkOutline, IoAlertCircleOutline } from "react-icons/io5";
 import { FaSpinner } from "react-icons/fa";
+import { CheckCheck } from "lucide-react";
 
 function MessageStatus({ status }) {
   return (
-    <div className="flex items-center">
+    <div>
       {status === "sending" && (
         <FaSpinner className="text-sm animate-spin text-white/70" />
       )}
@@ -12,13 +13,13 @@ function MessageStatus({ status }) {
         <IoAlertCircleOutline className="text-sm text-red-400" />
       )}
       {status === "sent" && (
-        <IoCheckmarkOutline className="text-sm text-white/70" />
+        <IoCheckmarkOutline className="text-sm text-primary-foreground/70" />
       )}
       {status === "delivered" && (
-        <IoCheckmarkDone className="text-sm text-white/70" />
+        <CheckCheck className="text-[5px] text-primary-background/50" />
       )}
       {status === "read" && (
-        <IoCheckmarkDone className="text-sm text-icon-ack" />
+        <CheckCheck className="text-[5px] text-primary-background/70" />
       )}
     </div>
   );

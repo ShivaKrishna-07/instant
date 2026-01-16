@@ -4,11 +4,13 @@ import ChatContainer from "./ChatContainer";
 import MessageBar from "./MessageBar";
 
 function Chat() {
-  return <div className="border-conversation-border border-l w-full bg-conversation-panel-background flex flex-col z-10 h-screen">
-    <ChatHeader />
-    <ChatContainer />
-    <MessageBar />
-  </div>;
+  return (
+    <div className="flex-1 flex flex-col h-screen bg-background min-w-0">
+      <ChatHeader />
+      <ChatContainer />
+      <MessageBar />
+    </div>
+  );
 }
 
 export default Chat;

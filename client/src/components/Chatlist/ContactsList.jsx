@@ -2,8 +2,10 @@ import { reducerCases } from "@/context/constants";
 import { useStateProvider } from "@/context/StateContext";
 import apiClient from "@/utils/api";
 import React, { useEffect, useState } from "react";
-import { BiArrowBack, BiSearchAlt2 } from "react-icons/bi";
+import { BiArrowBack } from "react-icons/bi";
 import ChatLIstItem from "./ChatLIstItem";
+import SearchBar from "./SearchBar";
+import { motion } from "framer-motion";
 
 function ContactsList() {
   const [contacts, setContacts] = useState({});
@@ -22,47 +24,41 @@ function ContactsList() {
   }, []);
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="h-24 flex items-end px-3 py-4">
-        <div className="flex items-center gap-12 text-white">
+    <div className="flex-1 min-h-0 flex flex-col">
+      <div className="flex items-end px-3 py-4">
+        <div className="flex items-center gap-4 text-white">
           <BiArrowBack
-            className="cursor-pointer text-xl"
+            className="cursor-pointer text-xl hover:text-teal-light transition"
             onClick={() =>
               dispatch({ type: reducerCases.SET_ALL_CONTACTS_PAGE })
             }
           />
-          <span>New Chat</span>
+          <span className="font-semibold">New Chat</span>
         </div>
       </div>
-      <div className="bg-search-input-container-background h-full flex-auto overflow-auto custom-scrollbar">
-        <div className="flex py-3 items-center gap-3 h-14">
-          <div className="bg-panel-header-background flex items-center gap-5 px-3 py-1 rounded-lg grow mx-4">
-            <div>
-              <BiSearchAlt2 className="text-panel-header-icon cursor-pointer text-lg" />
-            </div>
-            <div>
-              <input
-                type="text"
-                placeholder="Search Contacts"
-                className="bg-transparent text-sm focus:outline-none text-white w-full"
-              />
-            </div>
-          </div>
-        </div>
+      <div
+        className="bg-search-input-container-background flex-1 overflow-y-auto min-h-0 custom-scrollbar"
+        style={{ maxHeight: 'calc(100vh - 96px)', WebkitOverflowScrolling: 'touch' }}
+      >
+
         {Object.entries(contacts).map(([initialLetter, userList], index) => (
           <div key={index} className="px-4">
             <div className="text-teal-light pl-2 py-3 font-semibold">
               {initialLetter}
             </div>
-            {
-              userList.map((user) => (
+            {userList.map((user, idx) => (
+              <motion.div
+                key={user.id}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.2, delay: idx * 0.03 }}
+              >
                 <ChatLIstItem
                   data={user}
                   isContactPage={true}
-                  key={user.id}
                 />
-              )
-            )}
+              </motion.div>
+            ))}
           </div>
         ))}
       </div>

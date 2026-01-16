@@ -1,15 +1,27 @@
 import React, { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
 import Avatar from "../common/Avatar";
-import { MdCall, MdVideocam, MdSearch, MdMoreVert } from "react-icons/md";
+import { Phone, Video, Search, ArrowLeft } from "lucide-react";
 import { useStateProvider } from "@/context/StateContext";
 import { reducerCases } from "@/context/constants";
 import SearchBar from "./SearchBar";
-import { toast } from "react-hot-toast";
 
-function ChatHeader() {
-  const [{ currentChatUser, searchMatches = [], searchIndex = 0, searchQuery = "", socket }, dispatch] = useStateProvider();
+function ChatHeader({ isMobile = false, onBackClick }) {
+  const [
+    {
+      currentChatUser,
+      searchMatches = [],
+      searchIndex = 0,
+      searchQuery = "",
+      socket,
+    },
+    dispatch,
+  ] = useStateProvider();
+
   const [showSearch, setShowSearch] = useState(false);
 
+  /* ---------------- Search logic (unchanged) ---------------- */
   const onSearchChange = (q) => {
     dispatch({ type: reducerCases.SET_SEARCH_QUERY, query: q });
   };
@@ -22,70 +34,53 @@ function ChatHeader() {
   };
 
   const onNext = () => {
-    if (!searchMatches || searchMatches.length === 0) return;
-    const next = (searchIndex + 1) % searchMatches.length;
-    dispatch({ type: reducerCases.SET_SEARCH_INDEX, index: next });
+    if (!searchMatches.length) return;
+    dispatch({
+      type: reducerCases.SET_SEARCH_INDEX,
+      index: (searchIndex + 1) % searchMatches.length,
+    });
   };
 
   const onPrev = () => {
-    if (!searchMatches || searchMatches.length === 0) return;
-    const prev = (searchIndex - 1 + searchMatches.length) % searchMatches.length;
-    dispatch({ type: reducerCases.SET_SEARCH_INDEX, index: prev });
+    if (!searchMatches.length) return;
+    dispatch({
+      type: reducerCases.SET_SEARCH_INDEX,
+      index: (searchIndex - 1 + searchMatches.length) % searchMatches.length,
+    });
   };
 
-  // presence state (derived from socket only)
-  // null = unknown / not checked, true = online, false = offline
+  /* ---------------- Presence logic (unchanged) ---------------- */
   const [online, setOnline] = useState(null);
 
-  // query presence via socket callback when chat user changes
   useEffect(() => {
-    if (!currentChatUser?.id) {
+    if (!currentChatUser?.id || !socket?.current) {
       setOnline(null);
       return;
     }
 
-    if (!socket || !socket.current) {
-      // socket not ready -> unknown status
-      setOnline(null);
-      return;
-    }
+    socket.current.emit("is-online", currentChatUser.id, (res) => {
+      setOnline(!!res?.online);
+    });
 
-    try {
-      socket.current.emit('is-online', currentChatUser.id, (res) => {
-        setOnline(res && !!res.online ? true : false);
-      });
-    } catch (e) {
-      setOnline(null);
-    }
+    const handleOnline = (id) =>
+      id === currentChatUser.id && setOnline(true);
+    const handleOffline = (id) =>
+      id === currentChatUser.id && setOnline(false);
 
-    // subscribe to real-time updates
-    const handleOnline = (userId) => {
-      if (userId === currentChatUser?.id) setOnline(true);
-    };
-    const handleOffline = (userId) => {
-      if (userId === currentChatUser?.id) setOnline(false);
-    };
-
-    socket.current.on('user-online', handleOnline);
-    socket.current.on('user-offline', handleOffline);
+    socket.current.on("user-online", handleOnline);
+    socket.current.on("user-offline", handleOffline);
 
     return () => {
-      try {
-        socket.current.off('user-online', handleOnline);
-        socket.current.off('user-offline', handleOffline);
-      } catch (e) {}
+      socket.current.off("user-online", handleOnline);
+      socket.current.off("user-offline", handleOffline);
     };
   }, [currentChatUser, socket]);
 
+  /* ---------------- Keyboard shortcuts (unchanged) ---------------- */
   useEffect(() => {
     const handler = (e) => {
-      // Close on Escape
-      if (e.key === "Escape") {
-        if (showSearch) onCloseSearch();
-        return;
-      }
+      if (e.key === "Escape" && showSearch) onCloseSearch();
 
-      // Open search on Ctrl/Cmd + Shift + F
       const isMod = e.ctrlKey || e.metaKey;
       if (isMod && e.shiftKey && (e.key === "F" || e.key === "f")) {
         e.preventDefault();
@@ -97,29 +92,83 @@ function ChatHeader() {
     return () => window.removeEventListener("keydown", handler);
   }, [showSearch]);
 
+  /* ---------------- UI (copied from ChatArea header) ---------------- */
   return (
-    <div className="relative h-16 px-4 py-3 flex justify-between items-center bg-panel-header-background z-10">
-      <div className="flex items-center justify-center gap-6">
-        <Avatar type="sm" image={currentChatUser?.profile_image || "/default_avatar.png"} />
-        <div className="flex flex-col">
-          <span className="text-primary-strong">{currentChatUser?.name || "John Doe"}</span>
-          <span className="text-secondary text-sm">
-            {online === null ? "" : online ? "online" : "offline"}
-          </span>
+    <motion.div
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="h-14 sm:h-16 px-3 sm:px-4 flex items-center justify-between border-b border-border bg-card shrink-0 relative z-10"
+    >
+      {/* Left */}
+      <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+        {isMobile && (
+          <Button
+            variant="icon"
+            size="iconSm"
+            className="shrink-0"
+            onClick={onBackClick}
+          >
+            <ArrowLeft size={20} />
+          </Button>
+        )}
+
+        <Avatar
+          type="sm"
+          image={currentChatUser?.profile_image || "/default_avatar.png"}
+        />
+
+        <div className="min-w-0">
+          <h3 className="font-semibold text-sm sm:text-base truncate">
+            {currentChatUser?.name || "John Doe"}
+          </h3>
+          <p className="text-xs text-muted-foreground">
+            {online === null ? "" : online ? "Online" : "Offline"}
+          </p>
         </div>
       </div>
-      <div className="flex gap-5">
-          <MdCall className="text-panel-header-icon cursor-pointer text-xl" onClick={() => {
+
+      {/* Right */}
+      <div className="flex items-center gap-0.5 sm:gap-1 shrink-0">
+        <Button
+          variant="icon"
+          size="icon"
+          className="w-9 h-9 sm:w-10 sm:h-10"
+          onClick={() => {
             const targetId = currentChatUser?.id;
-            if (targetId) dispatch({ type: reducerCases.START_CALL, payload: { targetId, kind: 'voice' } });
-          }} />
-          <MdVideocam className="text-panel-header-icon cursor-pointer text-xl" onClick={() => {
-            // trigger start-call action to initiate WebRTC flow (video)
+            if (targetId)
+              dispatch({
+                type: reducerCases.START_CALL,
+                payload: { targetId, kind: "voice" },
+              });
+          }}
+        >
+          <Phone size={18} className="sm:w-5 sm:h-5" />
+        </Button>
+
+        <Button
+          variant="icon"
+          size="icon"
+          className="w-9 h-9 sm:w-10 sm:h-10"
+          onClick={() => {
             const targetId = currentChatUser?.id;
-            if (targetId) dispatch({ type: reducerCases.START_CALL, payload: { targetId, kind: 'video' } });
-          }} />
-        <MdSearch className="text-panel-header-icon cursor-pointer text-xl" onClick={() => setShowSearch(!showSearch)} />
-        <MdMoreVert className="text-panel-header-icon cursor-pointer text-xl" />
+            if (targetId)
+              dispatch({
+                type: reducerCases.START_CALL,
+                payload: { targetId, kind: "video" },
+              });
+          }}
+        >
+          <Video size={18} className="sm:w-5 sm:h-5" />
+        </Button>
+
+        <Button
+          variant="icon"
+          size="icon"
+          className="w-9 h-9 sm:w-10 sm:h-10 hidden sm:flex"
+          onClick={() => setShowSearch((v) => !v)}
+        >
+          <Search size={18} className="sm:w-5 sm:h-5" />
+        </Button>
       </div>
 
       <SearchBar
@@ -128,11 +177,11 @@ function ChatHeader() {
         onSearchChange={onSearchChange}
         onNext={onNext}
         onPrev={onPrev}
-        count={searchMatches?.length || 0}
+        count={searchMatches.length}
         index={searchIndex}
         value={searchQuery}
       />
-    </div>
+    </motion.div>
   );
 }
 

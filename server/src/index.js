@@ -19,8 +19,7 @@ const PORT = process.env.PORT || 5000;
 app.use(
   cors({
     origin: [
-      process.env.CLIENT_ORIGIN || "http://localhost:3000",
-      "http://10.88.50.119:3000", "https://1461e7126520.ngrok-free.app"
+      process.env.CLIENT_ORIGIN || "http://localhost:3000", "https://instant-cyan-psi.vercel.app/"
     ],
     credentials: true,
   })

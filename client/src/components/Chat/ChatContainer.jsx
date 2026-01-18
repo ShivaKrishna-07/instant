@@ -68,7 +68,7 @@ function ChatContainer() {
       ref={messagesContainerRef}
       className="h-[80vh] w-full relative grow overflow-auto custom-scrollbar"
     >
-      <div className="bg-chat-background bg-fixed h-full w-full opacity-5 fixed inset-0 z-0" />
+      <div className="bg-chat-background absolute inset-0 h-full w-full opacity-5 pointer-events-none z-0" />
 
       <div className="mx-10 my-6 relative z-40">
         <div className="flex flex-col gap-1">

@@ -14,6 +14,7 @@ import ThemeToggle from "@/components/ThemeToggle";
 import Logo from "@/components/Logo";
 import FloatingBubbles from "@/components/FloatingBubbles";
 import { Button } from "@/components/ui/button";
+import Loader from "@/components/ui/loader";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -87,8 +88,7 @@ export default function LoginPage() {
     return (
       <div className="flex h-screen w-screen items-center justify-center bg-panel-header-background">
         <div className="flex flex-col items-center gap-4">
-          <div className="h-12 w-12 animate-spin rounded-full border-4 border-white border-t-transparent" />
-          <p className="text-white">Loading...</p>
+          <Loader className="h-12 w-12 border-4 border-white" />
         </div>
       </div>
     );

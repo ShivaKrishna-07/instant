@@ -26,6 +26,7 @@ export default function RootLayout({ children }) {
             `,
           }}
         />
+        <link rel="shortcut icon" href="/logo.png" type="image/x-icon" />
       </head>
       <body className={`${inter.variable} antialiased bg-background text-foreground`}>
         <Providers>

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import apiClient from "@/utils/api";
 import ChatLIstItem from "./ChatLIstItem";
+import Loader from "@/components/ui/loader";
 
 function List() {
   const [loading, setLoading] = useState(false);
@@ -30,7 +31,9 @@ function List() {
   return (
     <div className="bg-search-input-container-background flex-1 overflow-auto min-h-0 custom-scrollbar">
       {loading ? (
-        <div className="p-4 text-secondary">Loading...</div>
+        <div className="p-4">
+          <Loader className="h-4 w-4 border-2 text-secondary" />
+        </div>
       ) : (
         conversations.map((c, idx) => (
           <motion.div

@@ -3,15 +3,13 @@ import { useStateProvider } from "@/context/StateContext";
 import apiClient from "@/utils/api";
 import EmojiPicker from "emoji-picker-react";
 import React, { useEffect, useRef, useState } from "react";
-import { BsEmojiSmile } from "react-icons/bs";
-import { ImAttachment } from "react-icons/im";
 import { MdSend } from "react-icons/md";
 import PhotoPicker from "../common/PhotoPicker";
 import { FaMicrophone } from "react-icons/fa";
 import dynamic from "next/dynamic";
 import { Input } from "../ui/input";
 import { motion } from "framer-motion";
-import { Paperclip, Smile } from "lucide-react";
+import { Mic, Paperclip, Smile } from "lucide-react";
 import { Button } from "../ui/button";
 
 const CaptureAudio = dynamic(() => import("../common/CaptureAudio"), {
@@ -177,7 +175,7 @@ function MessageBar() {
             )}
           </div>
           <div className="flex w-10 items-center justify-center">
-            <button>
+            <div>
               {message.trim() !== "" ? (
                 <MdSend
                   className="text-panel-header-icon cursor-pointer text-xl"
@@ -185,13 +183,16 @@ function MessageBar() {
                   onClick={sendMessage}
                 />
               ) : (
-                <FaMicrophone
-                  className="text-panel-header-icon cursor-pointer text-xl"
-                  title="Record Audio"
+                <Button
+                  variant="send"
+                  size="icon"
                   onClick={() => setShowAudioRecorder(true)}
-                />
+                  className="shrink-0 w-9 h-9 sm:w-10 sm:h-10"
+                >
+                  <Mic size={16} className="sm:w-[18px] sm:h-[18px]" />
+                </Button>
               )}
-            </button>
+            </div>
           </div>
           <PhotoPicker ref={fileInputRef} onChange={photoPickerChange} />
         </>

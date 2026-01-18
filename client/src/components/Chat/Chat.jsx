@@ -3,10 +3,10 @@ import ChatHeader from "./ChatHeader";
 import ChatContainer from "./ChatContainer";
 import MessageBar from "./MessageBar";
 
-function Chat() {
+function Chat({ isMobile = false, onBackClick }) {
   return (
     <div className="flex-1 flex flex-col h-screen bg-background min-w-0">
-      <ChatHeader />
+      <ChatHeader isMobile={isMobile} onBackClick={onBackClick} />
       <ChatContainer />
       <MessageBar />
     </div>

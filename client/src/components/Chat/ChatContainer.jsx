@@ -5,7 +5,6 @@ import React, { useEffect, useRef, useState } from "react";
 import MessageStatus from "../common/MessageStatus";
 import ImageMessage from "./ImageMessage";
 import dynamic from "next/dynamic";
-import { Check, CheckCheck } from "lucide-react";
 import { motion } from "framer-motion";
 const VoiceMessage = dynamic(() => import("./VoiceMessage"), {
   ssr: false,
@@ -137,26 +136,18 @@ function MessageBubble({
       transition={{ duration: 0.2, delay: index * 0.05 }}
       className={`flex ${!isIncoming ? "justify-end" : "justify-start"}`}
     >
-
       {/* TEXT */}
       {message.type === "text" && (
         <div
-          className={`max-w-[75%] px-4 py-2.5 rounded-2xl
-            ${!isIncoming ? "bg-primary text-foreground rounded-br-md"
-            : "bg-muted text-foreground rounded-bl-md"}
-            ${isHighlighted ? "ring-2 ring-yellow-400" : ""}
-          `}
+          className={`max-w-[75%] px-4 py-2.5 rounded-2xl ${
+            !isIncoming
+              ? "bg-primary text-primary-foreground/70 rounded-br-md"
+              : "bg-muted text-muted-foreground rounded-bl-md"
+          }`}
         >
           <p className="text-sm leading-relaxed">{renderHighlightedText()}</p>
-
-          <div 
-            className={`flex items-center justify-end gap-1 mt-1 ${
-            !isIncoming ? "text-primary-foreground/70" : "text-muted-foreground"
-          }`}
-          >
-            <span className="text-[10px]">
-              {calculateTime?.(message.created_at)}
-            </span>
+          <div className={`flex items-center justify-end gap-1 mt-1 ${!isIncoming ? "text-primary-background/70" : "text-muted-foreground"}`}>
+            <span className="text-[10px]">{calculateTime?.(message.created_at)}</span>
             {message.sender_id === userInfo.id && (
               <MessageStatus status={message.message_status} />
             )}

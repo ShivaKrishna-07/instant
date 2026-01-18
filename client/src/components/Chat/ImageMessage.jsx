@@ -4,11 +4,12 @@ import MessageStatus from "../common/MessageStatus";
 import Image from "next/image";
 
 function ImageMessage({ message, userInfo, currentChatUser }) {
+  const isIncoming = message.sender_id === currentChatUser.id;
   return (
     <div
       className={`p-1 rounded-lg ${
-        message.sender_id === currentChatUser.id
-          ? "bg-muted text-foreground"
+        isIncoming
+          ? "bg-muted text-primary"
           : "bg-primary text-primary-foreground"
       }`}
     >
@@ -22,7 +23,7 @@ function ImageMessage({ message, userInfo, currentChatUser }) {
         />
       </div>
       <div className="flex justify-end gap-1 items-end mt-1">
-        <span className="text-[10px] text-primary-foreground">
+        <span className={`text-[10px] ${isIncoming ? "text-muted-foreground" : "text-primary-foreground/70"}`}>
           {calculateTime?.(message.created_at) || ""}
         </span>
         {message.sender_id === userInfo.id && (

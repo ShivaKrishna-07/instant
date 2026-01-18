@@ -74,6 +74,17 @@ function Avatar({ type, image, setImage }, ref) {
   return (
     <>
       <div className="flex items-center justify-center">
+        {type === "xs" && (
+          <div className="relative h-6 w-6">
+            {typeof image === "string" ? (
+              // plain img for dynamic object/data URLs or simple paths
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={image} alt="avatar" className="rounded-full w-full h-full object-cover" />
+            ) : (
+              <Image src={image} alt="avatar" className="rounded-full" fill />
+            )}
+          </div>
+        )}
         {type === "sm" && (
           <div className="relative h-10 w-10">
             {typeof image === "string" ? (

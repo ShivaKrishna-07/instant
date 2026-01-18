@@ -1,10 +1,11 @@
 "use client"
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import ChatList from "./Chatlist/ChatList";
 import Empty from "./Empty";
 import { useStateProvider } from "@/context/StateContext";
 import { reducerCases } from "@/context/constants";
 import Chat from "./Chat/Chat";
+import ChatSkeleton from "./Chat/ChatSkeleton";
 import apiClient from "@/utils/api";
 import { io } from "socket.io-client";
 import dynamic from 'next/dynamic';
@@ -43,10 +44,27 @@ function Main() {
     }
   }, [userInfo, dispatch]);
 
+  const [messagesLoading, setMessagesLoading] = useState(false);
+  const [isNarrow, setIsNarrow] = useState(false);
+
+  useEffect(() => {
+    const onResize = () => setIsNarrow(window.innerWidth < 1024);
+    onResize();
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
   useEffect(()=>{
     const getMessages = async () => {
-      const res = await apiClient.get(`/messages/get-messages/${userInfo.id}/${currentChatUser.id}`);
-      dispatch({ type: reducerCases.SET_MESSAGES, messages: res.data.messages });
+      try {
+        setMessagesLoading(true);
+        const res = await apiClient.get(`/messages/get-messages/${userInfo.id}/${currentChatUser.id}`);
+        dispatch({ type: reducerCases.SET_MESSAGES, messages: res.data.messages });
+      } catch (err) {
+        console.error("Failed to load messages", err);
+      } finally {
+        setMessagesLoading(false);
+      }
     }
     if(currentChatUser?.id && userInfo?.id){
       getMessages();
@@ -57,7 +75,18 @@ function Main() {
     <div className="h-screen w-screen flex overflow-hidden">
       <ChatList />
       <div className="flex-1 min-h-0 flex flex-col">
-        {currentChatUser ? <Chat /> : <Empty />}
+        {currentChatUser ? (
+          messagesLoading ? (
+            <ChatSkeleton />
+          ) : (
+            <Chat
+              isMobile={isNarrow}
+              onBackClick={() => dispatch({ type: reducerCases.SET_CURRENT_CHAT_USER, user: null })}
+            />
+          )
+        ) : (
+          <Empty />
+        )}
       </div>
       <CallManager />
     </div>

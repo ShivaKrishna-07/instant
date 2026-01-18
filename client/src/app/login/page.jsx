@@ -14,7 +14,7 @@ import ThemeToggle from "@/components/ThemeToggle";
 import Logo from "@/components/Logo";
 import FloatingBubbles from "@/components/FloatingBubbles";
 import { Button } from "@/components/ui/button";
-import Loader from "@/components/ui/loader";
+import { GlobalLoader } from "@/components/GlobalLoader";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -85,13 +85,7 @@ export default function LoginPage() {
 
   // Show loading if already authenticated and processing
   if (status === "loading" || (status === "authenticated" && loading)) {
-    return (
-      <div className="flex h-screen w-screen items-center justify-center bg-panel-header-background">
-        <div className="flex flex-col items-center gap-4">
-          <Loader className="h-12 w-12 border-4 border-white" />
-        </div>
-      </div>
-    );
+    return <GlobalLoader isLoading={true} message={status === "loading" ? "Preparing..." : "Signing you in..."} />;
   }
 
   return (

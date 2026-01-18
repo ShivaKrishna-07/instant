@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Logo from "@/components/Logo";
 import ThemeToggle from "@/components/ThemeToggle";
+import Avatar from "../common/Avatar";
 import { Search, Plus, MoreVertical } from "lucide-react";
 import { BiLogOut } from "react-icons/bi";
 import { signOut } from "next-auth/react";
@@ -16,8 +17,10 @@ import { useStateProvider } from "@/context/StateContext";
 import ContactsList from "./ContactsList";
 
 function ChatList() {
-  const [{ contactsPage }] = useStateProvider();
+  const [{ contactsPage, currentChatUser, userInfo }] = useStateProvider();
   const [pageType, setPageType] = useState("default");
+  const [isNarrow, setIsNarrow] = useState(false);
+  const isMobile = pageType !== "default";
   const [searchQuery, setSearchQuery] = useState("");
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef(null);
@@ -30,6 +33,14 @@ function ChatList() {
       setPageType("default");
     }
   }, [contactsPage]);
+
+  // Track narrow screen sizes so we can hide the sidebar when a chat is open
+  useEffect(() => {
+    const onResize = () => setIsNarrow(window.innerWidth < 1024);
+    onResize();
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -53,58 +64,36 @@ function ChatList() {
     }
   };
 
+  // Hide the sidebar on narrow screens when a chat is active so the chat fills the viewport
+  const hideOnMobile = isNarrow && !!currentChatUser;
+
   return (
-    <div className={`h-screen min-h-0 flex flex-col bg-card ${"w-72 xl:w-80 border-r border-border shrink-0"}`}>
+    <div className={`h-screen min-h-0 flex flex-col bg-card ${hideOnMobile ? 'hidden' : isNarrow ? 'absolute inset-0 z-40 w-full' : 'w-72 xl:w-80 border-r border-border shrink-0'}`}>
       {/* Header */}
-      <div className="p-3 sm:p-4 border-b border-border shrink-0">
+      <motion.div
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.2 }}
+        className="p-3 sm:p-4 border-b border-border shrink-0"
+      >
         <div className="flex items-center justify-between mb-3 sm:mb-4">
           <Logo size="sm" />
           <div className="flex items-center gap-0.5 sm:gap-1 relative">
             <ThemeToggle />
-            <Button variant="icon" size="iconSm" onClick={() => setPageType("new-chat")}>
+            <Button variant="icon" size="iconSm" onClick={() => setPageType("new-chat") }>
               <Plus size={18} />
             </Button>
-            <div ref={menuRef} className="relative">
-              <Button variant="icon" size="iconSm" onClick={() => setShowMenu(!showMenu)}>
-                <MoreVertical size={18} />
+              <Button variant="icon" size="iconSm" onClick={() => router.push('/profile')} className="p-0">
+                <Avatar type="xs" image={userInfo?.profile_image || '/default_avatar.png'} />
               </Button>
-
-              <AnimatePresence>
-                {showMenu && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95, y: -6 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.95, y: -6 }}
-                    transition={{ duration: 0.12 }}
-                    className="absolute right-0 top-full mt-2 bg-card border border-border rounded-xl shadow-xl overflow-hidden w-48 z-50"
-                  >
-                    <motion.button
-                      initial={{ opacity: 0, x: -8 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.12 }}
-                      onClick={() => {
-                        setShowMenu(false);
-                        handleLogout();
-                      }}
-                      className="w-full px-4 py-3 flex items-center gap-3 hover:bg-muted transition-colors text-left"
-                    >
-                      <BiLogOut className="text-xl" />
-                      <span>Logout</span>
-                    </motion.button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
           </div>
         </div>
 
         {/* Search */}
         <div className="relative">
-          <div className="">
-            <SearchBar className="pl-0" />
-          </div>
+          <SearchBar />
         </div>
-      </div>
+      </motion.div>
 
       {/* Contact list */}
       {pageType === "default" ? (

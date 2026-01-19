@@ -10,6 +10,35 @@ const VoiceMessage = dynamic(() => import("./VoiceMessage"), {
   ssr: false,
 });
 
+// helpers for grouping and formatting
+const isSameDay = (a, b) => {
+  if (!a || !b) return false;
+  const da = new Date(a);
+  const db = new Date(b);
+  return da.getFullYear() === db.getFullYear() && da.getMonth() === db.getMonth() && da.getDate() === db.getDate();
+};
+
+const getDateLabel = (dateStr) => {
+  if (!dateStr) return "";
+  const d = new Date(dateStr);
+  const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const msgStart = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+  const yesterdayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1).getTime();
+
+  if (msgStart === todayStart) return "Today";
+  if (msgStart === yesterdayStart) return "Yesterday";
+  return d.toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
+};
+
+const formatTime24 = (dateStr) => {
+  if (!dateStr) return "";
+  const d = new Date(dateStr);
+  const hh = String(d.getHours()).padStart(2, "0");
+  const mm = String(d.getMinutes()).padStart(2, "0");
+  return `${hh}:${mm}`;
+};
+
 function ChatContainer() {
   const [
     { messages, currentChatUser, userInfo, searchQuery, searchMatches, searchIndex },
@@ -71,17 +100,32 @@ function ChatContainer() {
 
       <div className="mx-10 my-6 relative z-40">
         <div className="flex flex-col gap-1">
-          {messages.map((message, index) => (
-            <MessageBubble
-              key={message.id || message.temp_id || index}
-              refEl={(el) => (messageRefs.current[index] = el)}
-              message={message}
-              index={index}
-              currentChatUser={currentChatUser}
-              userInfo={userInfo}
-              searchQuery={searchQuery}
-            />
-          ))}
+          {messages.map((message, index) => {
+            const prev = messages[index - 1];
+            const showDateHeader =
+              index === 0 || !isSameDay(prev?.created_at, message?.created_at);
+
+            return (
+              <React.Fragment key={message.id || message.temp_id || index}>
+                {showDateHeader && (
+                  <div className="sticky top-0 z-30 flex justify-center py-2">
+                    <div className="px-3 py-1 bg-card/90 rounded-full text-sm text-muted-foreground">
+                      {getDateLabel(message?.created_at)}
+                    </div>
+                  </div>
+                )}
+
+                <MessageBubble
+                  refEl={(el) => (messageRefs.current[index] = el)}
+                  message={message}
+                  index={index}
+                  currentChatUser={currentChatUser}
+                  userInfo={userInfo}
+                  searchQuery={searchQuery}
+                />
+              </React.Fragment>
+            );
+          })}
           <div ref={messagesEndRef} />
         </div>
       </div>
@@ -139,17 +183,21 @@ function MessageBubble({
       {/* TEXT */}
       {message.type === "text" && (
         <div
-          className={`max-w-[75%] px-4 py-2.5 rounded-2xl ${
+          className={`max-w-[75%] relative px-3 py-2 rounded-lg break-words whitespace-normal ${
             !isIncoming
-              ? "bg-primary text-primary-foreground/70 rounded-br-md"
-              : "bg-muted text-muted-foreground rounded-bl-md"
+              ? "pr-16 bg-[#f1f3f5] text-foreground rounded-br-none dark:bg-primary dark:text-primary-foreground"
+              : "pr-12 bg-muted text-muted-foreground rounded-bl-none"
           }`}
         >
-          <p className="text-sm leading-relaxed">{renderHighlightedText()}</p>
-          <div className={`flex items-center justify-end gap-1 mt-1 ${!isIncoming ? "text-primary-background/70" : "text-muted-foreground"}`}>
-            <span className="text-[10px]">{calculateTime?.(message.created_at)}</span>
+          <p className={`text-sm leading-5 ${!isIncoming ? "text-primary-foreground" : "text-foreground"}`}>{renderHighlightedText()}</p>
+
+          {/* timestamp + status - absolutely placed to the right inside bubble */}
+          <div className={`absolute right-2 bottom-1 flex items-center gap-1 ${!isIncoming ? "text-primary-foreground" : "text-muted-foreground"}`}>
+            <span className="text-[10px] leading-none">{formatTime24(message.created_at)}</span>
             {message.sender_id === userInfo.id && (
-              <MessageStatus status={message.message_status} />
+              <span className="flex items-center">
+                <MessageStatus status={message.message_status} />
+              </span>
             )}
           </div>
         </div>

@@ -8,7 +8,7 @@ function MessageStatus({ status }) {
   if (status === "failed") return <AlertCircle size={14} className="text-red-400" />;
   if (status === "sent") return <Check size={14} className="text-primary-background/70" />;
   if (status === "delivered") return <CheckCheck size={14} className="text-primary-background/50" />;
-  if (status === "read") return <CheckCheck size={14} className="text-primary-background/70" />;
+  if (status === "read") return <CheckCheck size={14} className="text-[#34B7F1]" />;
 
   return null;
 }

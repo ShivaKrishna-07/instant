@@ -1,8 +1,10 @@
 "use client"
 import React, { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { signOut } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Camera, Upload, Image, X, User, Edit3, Check } from "lucide-react";
+import ThemeToggle from "@/components/ThemeToggle";
 import { useStateProvider } from "@/context/StateContext";
 import { reducerCases } from "@/context/constants";
 
@@ -71,12 +73,15 @@ export default function ProfilePage() {
       <motion.header initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border">
         <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <button onClick={() => router.push('/chat')} className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-muted">
+            <button onClick={() => router.push('/')} className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-muted">
               <ArrowLeft size={18} />
             </button>
             <h1 className="text-lg font-semibold">Profile</h1>
           </div>
           <div className="flex items-center gap-2">
+            <div className="hidden sm:block">
+              <ThemeToggle />
+            </div>
             {!isEditing ? (
               <button onClick={startEdit} className="px-3 py-1 rounded-md border border-border hover:bg-muted flex items-center gap-2">
                 <Edit3 size={16} />
@@ -85,7 +90,7 @@ export default function ProfilePage() {
             ) : (
               <div className="flex items-center gap-2">
                 <button onClick={cancel} className="px-3 py-1 rounded-md border border-border hover:bg-muted">Cancel</button>
-                <button onClick={save} className="px-3 py-1 rounded-md bg-primary text-primary-foreground"> <Check size={16} /> Save</button>
+                <button onClick={save} className="px-3 py-1 rounded-md bg-primary text-primary-foreground">  Save</button>
               </div>
             )}
           </div>
@@ -130,6 +135,7 @@ export default function ProfilePage() {
                   <input value={edited.name} onChange={(e) => setEdited((s) => ({ ...s, name: e.target.value }))} className="text-xl font-bold h-auto py-1 bg-transparent w-full" />
                 )}
                 <p className="text-sm text-muted-foreground flex items-center gap-1"> <span className="w-2 h-2 rounded-full bg-success animate-pulse" /> Online</p>
+                <p className="text-xs text-muted-foreground mt-1">Joined: {userInfo?.joinedDate || userInfo?.created_at ? new Date(userInfo?.joinedDate || userInfo?.created_at).toLocaleDateString() : 'Unknown'}</p>
               </div>
             </div>
           </div>
@@ -152,6 +158,49 @@ export default function ProfilePage() {
               <Row label="Phone" value={isEditing ? edited.phone : userInfo?.phone} editing={isEditing} onChange={(v) => setEdited((s) => ({ ...s, phone: v }))} />
               <Row label="Location" value={isEditing ? edited.location : userInfo?.location} editing={isEditing} onChange={(v) => setEdited((s) => ({ ...s, location: v }))} />
             </div>
+          </div>
+        </div>
+      </div>
+      
+      <div className="max-w-3xl mx-auto px-4 py-8">
+        <div className="bg-card border border-destructive/20 rounded-2xl p-6">
+          <h3 className="text-sm font-semibold text-destructive uppercase tracking-wider mb-4">Danger Zone</h3>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <button
+              onClick={async () => {
+                if (!confirm('Are you sure you want to delete your account? This action cannot be undone.')) return;
+                try {
+                  await fetch('/api/delete-account', { method: 'POST' });
+                } catch (err) {
+                  console.warn('Delete account failed or endpoint missing', err);
+                } finally {
+                  localStorage.removeItem('token');
+                  localStorage.clear();
+                  await signOut({ redirect: false });
+                  router.replace('/login');
+                }
+              }}
+              className="px-3 py-2 rounded-md text-destructive border border-destructive/30 hover:bg-destructive/10"
+            >
+              Delete Account
+            </button>
+
+            <button
+              onClick={async () => {
+                try {
+                  localStorage.removeItem('token');
+                  localStorage.clear();
+                  await signOut({ redirect: false });
+                } catch (err) {
+                  console.error(err);
+                } finally {
+                  router.replace('/login');
+                }
+              }}
+              className="px-3 py-2 rounded-md border border-border hover:bg-muted"
+            >
+              Sign Out
+            </button>
           </div>
         </div>
       </div>

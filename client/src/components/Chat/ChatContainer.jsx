@@ -98,7 +98,7 @@ function ChatContainer() {
     >
       <div className="bg-chat-background absolute inset-0 h-full w-full opacity-5 pointer-events-none z-0" />
 
-      <div className="mx-10 my-6 relative z-40">
+      <div className="ml-4 my-6 relative z-40">
         <div className="flex flex-col gap-1">
           {messages.map((message, index) => {
             const prev = messages[index - 1];
@@ -185,11 +185,11 @@ function MessageBubble({
         <div
           className={`max-w-[75%] relative px-3 py-2 rounded-lg break-words whitespace-normal ${
             !isIncoming
-              ? "pr-16 bg-[#f1f3f5] text-foreground rounded-br-none dark:bg-primary dark:text-primary-foreground"
+              ? "pr-12 bg-[#f1f3f5] text-foreground rounded-br-none dark:bg-primary dark:text-primary-foreground"
               : "pr-12 bg-muted text-muted-foreground rounded-bl-none"
           }`}
         >
-          <p className={`text-sm leading-5 ${!isIncoming ? "text-primary-foreground" : "text-foreground"}`}>{renderHighlightedText()}</p>
+          <p className={`text-sm leading-5 ${!isIncoming ? "text-primary-foreground pr-6" : "text-foreground pr-6"}`}>{renderHighlightedText()}</p>
 
           {/* timestamp + status - absolutely placed to the right inside bubble */}
           <div className={`absolute right-2 bottom-1 flex items-center gap-1 ${!isIncoming ? "text-primary-foreground" : "text-muted-foreground"}`}>
@@ -222,7 +222,7 @@ function MessageBubble({
       )}
 
       {/* Outgoing avatar spacer */}
-      {!isIncoming && <div className="ml-2 w-8 h-8 invisible" />}
+      {!isIncoming && <div className="ml-1 w-4 h-8 invisible" />}
     </motion.div>
   );
 }

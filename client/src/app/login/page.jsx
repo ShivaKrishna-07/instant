@@ -12,7 +12,7 @@ import apiClient from "@/utils/api";
 import { motion } from "framer-motion";
 import ThemeToggle from "@/components/ThemeToggle";
 import Logo from "@/components/Logo";
-import FloatingBubbles from "@/components/FloatingBubbles";
+import LoginVisual from "@/components/LoginVisual";
 import { Button } from "@/components/ui/button";
 import { GlobalLoader } from "@/components/GlobalLoader";
 
@@ -83,13 +83,12 @@ export default function LoginPage() {
     }
   };
 
-  // Show loading if already authenticated and processing
-  if (status === "loading" || (status === "authenticated" && loading)) {
-    return <GlobalLoader isLoading={true} message={status === "loading" ? "Preparing..." : "Signing you in..."} />;
-  }
+  // Show loading overlay during auth or when sign-in flow is in progress
+  const showLoader = status === "loading" || (status === "authenticated" && loading) || loading;
 
   return (
     <div className="min-h-screen flex">
+      <GlobalLoader isLoading={showLoader} message={status === "loading" ? "Preparing..." : "Signing you in..."} />
       {/* Left side - Login */}
       <motion.div
         initial={{ opacity: 0, x: -20 }}
@@ -172,18 +171,9 @@ export default function LoginPage() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.8, delay: 0.2 }}
-        className="hidden lg:flex w-1/2 bg-card relative overflow-hidden"
+        className="hidden lg:flex w-1/2 relative overflow-hidden"
       >
-        <FloatingBubbles />
-        <div className="absolute inset-0 flex items-center justify-center">
-          <Image
-            src="/assets/login-visual.png"
-            alt="Instant messaging"
-            className="w-full h-full object-cover opacity-40"
-            width={100}
-            height={100}
-          />
-        </div>
+        <LoginVisual />
       </motion.div>
     </div>
   );

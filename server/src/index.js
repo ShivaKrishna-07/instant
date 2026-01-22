@@ -46,7 +46,7 @@ const server = app.listen(PORT, () => {
 
 const io = new Server(server, {
   cors: {
-    origin: process.env.CLIENT_ORIGIN || 'http://localhost:3000',
+    origin: ["http://localhost:3000", "https://instant-cyan-psi.vercel.app"],
     methods: ["GET", "POST"],
     credentials: true
   }

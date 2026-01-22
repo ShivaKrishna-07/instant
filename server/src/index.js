@@ -31,6 +31,9 @@ console.log("DB ready");
 
 // Public auth routes
 app.use('/api/auth', authRoutes);
+app.get('/', (req, res) => {
+  res.send('Instant Server is running');
+});
 
 // Protect remaining API routes
 app.use('/api', authMiddleware);

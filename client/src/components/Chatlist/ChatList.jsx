@@ -52,18 +52,6 @@ function ChatList() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showMenu]);
 
-  const handleLogout = async () => {
-    try {
-      localStorage.removeItem("token");
-      localStorage.clear();
-      await signOut({ redirect: false, callbackUrl: "/login" });
-      router.replace("/login");
-    } catch (err) {
-      console.error("Logout error:", err);
-      router.replace("/login");
-    }
-  };
-
   // Hide the sidebar on narrow screens when a chat is active so the chat fills the viewport
   const hideOnMobile = isNarrow && !!currentChatUser;
 
@@ -91,18 +79,18 @@ function ChatList() {
 
         {/* Search */}
         <div className="relative">
-          <SearchBar />
+          <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
         </div>
       </motion.div>
 
       {/* Contact list */}
       {pageType === "default" ? (
         <div className="flex-1 overflow-y-auto p-2 min-h-0">
-          <List />
+          <List searchQuery={searchQuery} />
         </div>
       ) : (
         <div className="flex-1 p-0 min-h-0">
-          <ContactsList />
+          <ContactsList searchQuery={searchQuery} />
         </div>
       )}
     </div>

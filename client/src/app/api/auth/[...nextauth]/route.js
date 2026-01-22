@@ -4,8 +4,8 @@ import GoogleProvider from "next-auth/providers/google";
 const handler = NextAuth({
   providers: [
     GoogleProvider({
-      clientId: process.env.NEXT_PUBLIC_GOOGLE_OAUTH_CLIENT_ID,
-      clientSecret: process.env.NEXT_PUBLIC_GOOGLE_OAUTH_CLIENT_SECRET,
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     }),
   ],
   
@@ -25,9 +25,10 @@ const handler = NextAuth({
         token.picture = user.image;
       }
       
-      // Store Firebase-compatible ID token if needed
-      if (account?.id_token) {
-        token.idToken = account.id_token;
+      // Store the access token from the OAuth provider
+      if (account) {
+        token.accessToken = account.access_token;
+        token.provider = account.provider;
       }
       
       return token;
@@ -37,7 +38,11 @@ const handler = NextAuth({
       // Add custom fields to session
       if (session.user) {
         session.user.id = token.id;
-        session.user.idToken = token.idToken;
+        session.user.email = token.email;
+        session.user.name = token.name;
+        session.user.image = token.picture;
+        // Add the token for backend API calls
+        session.accessToken = token.accessToken;
       }
       
       return session;
@@ -54,7 +59,7 @@ const handler = NextAuth({
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   
-  secret: process.env.NEXT_PUBLIC_NEXTAUTH_SECRET,
+  secret: process.env.NEXTAUTH_SECRET,
 });
 
 export { handler as GET, handler as POST };

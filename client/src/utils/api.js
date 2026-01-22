@@ -1,18 +1,23 @@
 import axios from 'axios';
-import { auth } from '@/config/firebase';
+import { getSession } from 'next-auth/react';
 
 const apiClient = axios.create({
   baseURL: `${process.env.NEXT_PUBLIC_BASE_API_URL}/api`,
   timeout: 10000,
 });
 
-// Request interceptor to attach token from localStorage
+// Request interceptor to attach NextAuth session token
 apiClient.interceptors.request.use(
   async (config) => {
     if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('authToken');
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
+      // Try to get token from NextAuth session
+      try {
+        const session = await getSession();
+        if (session?.accessToken) {
+          config.headers.Authorization = `Bearer ${session.accessToken}`;
+        }
+      } catch (error) {
+        console.error('Failed to get session:', error);
       }
     }
     return config;
@@ -27,24 +32,9 @@ apiClient.interceptors.response.use(
     const originalRequest = error.config;
     const status = error?.response?.status;
     
-    // Handle 401 errors - try to refresh token
+    // Handle 401 errors - redirect to login
     if (status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
-      
-      try {
-        const currentUser = auth.currentUser;
-        if (currentUser) {
-          // Get fresh Firebase token
-          const freshToken = await currentUser.getIdToken(true);
-          if (freshToken) {
-            localStorage.setItem('authToken', freshToken);
-            originalRequest.headers.Authorization = `Bearer ${freshToken}`;
-            return apiClient(originalRequest);
-          }
-        }
-      } catch (refreshError) {
-        console.error('Token refresh failed:', refreshError);
-      }
       
       // Clear storage and redirect to login
       if (typeof window !== 'undefined') {
@@ -52,7 +42,10 @@ apiClient.interceptors.response.use(
         if (currentPath !== '/login' && currentPath !== '/onboarding') {
           localStorage.clear();
           try {
-            window.dispatchEvent(new CustomEvent('api:unauthorized'));
+            // Use NextAuth signOut
+            const { signOut } = await import('next-auth/react');
+            await signOut({ redirect: false });
+            window.location.replace('/login');
           } catch (e) {
             window.location.replace('/login');
           }

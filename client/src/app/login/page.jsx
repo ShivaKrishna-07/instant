@@ -33,11 +33,6 @@ export default function LoginPage() {
     try {
       const { name, email, image } = user;
 
-      // Store session data in localStorage for API calls
-      if (session?.user?.idToken) {
-        localStorage.setItem("authToken", session.user.idToken);
-      }
-
       console.log("Checking user in database:", email);
       const res = await apiClient.post("/auth/check-user", { email });
 
